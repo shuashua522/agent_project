@@ -11,19 +11,19 @@ import os
 from langchain.chat_models import init_chat_model
 
 # 豆包
-# os.environ["ARK_API_KEY"] = "5950638e-f4c0-45d0-a005-cd9331ecada8"
-# base_url = "https://ark.cn-beijing.volces.com/api/v3/"
-# model = "ep-20250728194617-tzlfv"
+# os.environ["ARK_API_KEY"] = ""
+# base_url = ""
+# model = ""
 
 # deepseek
-# os.environ["ARK_API_KEY"] = "sk-70bd7714a49d4808af6a939853fcbfce"
-# base_url="https://api.deepseek.com/v1"
-# model="deepseek-chat"
+# os.environ["ARK_API_KEY"] = ""
+# base_url=""
+# model=""
 
 # openai
-os.environ["ARK_API_KEY"] = "sk-2QWn8qEwBPx2VCa0Ed61A9C304E34fEb928aC42873301d66"
-base_url="https://free.v36.cm/v1/"
-model="gpt-4o-mini"
+os.environ["ARK_API_KEY"] = ""
+base_url=""
+model=""
 
 llm = init_chat_model(
     model=model,
