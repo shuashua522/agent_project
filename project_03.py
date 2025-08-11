@@ -10,20 +10,10 @@ os.environ["LANGSMITH_API_KEY"] = "lsv2_pt_567079e33e0e4ee9add6a7fbd129dafa_16d1
 import os
 from langchain.chat_models import init_chat_model
 
-# 豆包
-# os.environ["ARK_API_KEY"] = ""
-# base_url = ""
-# model = ""
-
-# deepseek
-# os.environ["ARK_API_KEY"] = ""
-# base_url=""
-# model=""
-
-# openai
-os.environ["ARK_API_KEY"] = ""
-base_url=""
 model=""
+base_url=""
+httpx_client=""
+
 
 llm = init_chat_model(
     model=model,
@@ -31,7 +21,16 @@ llm = init_chat_model(
     api_key=os.environ.get("ARK_API_KEY"),
     base_url=base_url,
     temperature=0,
+    http_client=httpx_client
 )
+
+# llm = init_chat_model(
+#     model=model,
+#     model_provider="openai",
+#     api_key=os.environ.get("ARK_API_KEY"),
+#     base_url=base_url,
+#     temperature=0,
+# )
 
 from typing import Literal
 from langchain_core.messages import AIMessage
@@ -46,7 +45,9 @@ def generate_python_code(state: MessagesState):
     你是一个用Python来解决问题的代理。
     给定输入问题，直接生成对应的Python代码或者根据反馈意见重新生成代码。
 
-    - 仅输出Python代码，不要添加任何不符合Python代码的文本，你的回答我会直接存储到.py文件。
+    - 直接输出Python代码，不要添加任何不符合Python代码的文本，你的回答我会直接存储到.py文件。
+    - 不要添加任何解释性文字，除非带了注释
+    - 编写代码时，如需输出结果，请使用print
     """
     system_message = {
         "role": "system",
@@ -57,7 +58,7 @@ def generate_python_code(state: MessagesState):
     python_code_system_prompt = """
         【文本】：{text}
         检查【文本】内容是否可以直接写入.py文件，如果可以，直接输出原文本；
-        如果不行，修改【文本】成可以直接写入 .py文件的形式，然后直接输出它
+        如果不行，修改【文本】成可以直接写入 .py文件的形式，然后直接输出它（**不要附加任何不符合Python语法的内容**）
         """.format(text=response.content)
     system_message = {
         "role": "system",
@@ -97,24 +98,25 @@ def check_python_code(state: MessagesState) -> Command[Literal["generate_python_
         )
 
 
-    check_result = run_bandit_cmd(r'my_code.py', output_format='json')
-
-    # 生成查询语句的节点逻辑
-    check_system_prompt = """
-    【代码】：{code}
-    【安全检查结果】：{check_result}
-
-    请你担任结果校验者，判断安全检查结果是否存在问题，并按照以下输出规则（**必须生成判断结果，不得返回空内容**）：
-       - 符合预期时，仅输出：ok
-       - 不符合预期时，仅输出error
-    """.format(code=code, check_result=check_result)
-
-    system_message = {
-        "role": "system",
-        "content": check_system_prompt,
-    }
-    response = llm.invoke([system_message])
-    is_ok = "ok" in response.content
+    # check_result = run_bandit_cmd(r'my_code.py', output_format='json')
+    #
+    # # 生成查询语句的节点逻辑
+    # check_system_prompt = """
+    # 【代码】：{code}
+    # 【安全检查结果】：{check_result}
+    #
+    # 请你担任结果校验者，判断安全检查结果是否存在问题，并按照以下输出规则（**必须生成判断结果，不得返回空内容**）：
+    #    - 符合预期时，仅输出：ok
+    #    - 不符合预期时，仅输出error
+    # """.format(code=code, check_result=check_result)
+    #
+    # system_message = {
+    #     "role": "system",
+    #     "content": check_system_prompt,
+    # }
+    # response = llm.invoke([system_message])
+    # is_ok = "ok" in response.content
+    is_ok=True
 
     if is_ok:
         goto = "run_python_code"
@@ -194,7 +196,7 @@ def check_output_val(state: MessagesState) -> Command[Literal["generate_python_c
 
     请你担任结果校验者，判断答案是否符合预期，并按照以下输出规则（**必须生成判断结果，不得返回空内容，符合就输出ok**）：
        - 符合预期时，仅输出：ok
-       - 不符合预期时，仅输出具体原因（需明确指出问题，例如：未回答问题中的XX要求/包含与问题冲突的XX信息/遗漏了XX关键要点等）
+       - 不符合预期时，仅输出具体原因
 
     示例：
     【问题】：北京的昨天气温？

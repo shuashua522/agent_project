@@ -1,70 +1,38 @@
-1. 56 + 32 × 4 - 18 ÷ 6
-2. 100 - 7² + 24 ÷ (12 - 8)
-3. 3.6 × 5 + 12.5 ÷ 2.5 - 4.8
-4. (78 - 26) × 3 + 45 ÷ 9
-5. 6² - 18 ÷ 3 × 2 + 15
-6. 0.8 + 4.5 × 2 - 3.2 ÷ 0.4
-7. 90 - (12 + 5×6) + 7²
-8. 15 × (24 ÷ 4) - 3³ + 11
-9. 7.2 ÷ 0.9 + 3.5 × 2 - 6
-10. (50 - 14) ÷ 6 + 8×3 - 17
-11. $[ (3.5 + 4.2)^2 - 12.5 \times 3.6 ] \div (7.8 - 2.3) + 4^3$
-12. $15.6 \div [ 2.5 \times (6.3 - 4.7) ] + \sqrt{81} \times (12 - 7.2)$
-13. $[ (18 - 5.2 \times 2) \div 3.6 + 7 ] \times 4.5 - 27 \div 1.5$
-14. $6.8 \times [ 3.2 + (10.5 - 7.8) \times 2.4 ] - \sqrt{121} \div 1.1$
-15. $[ (4^3 - 12) \div 5 + 3.6 \times 2 ] \times (8.4 - 5.9) + 18.2 \div 0.7$
-16. $12.5 \div [ (7.2 - 5.7) \times 4 ] + (6.3 + 2.7)^2 \div 0.9$
-17. $[ 8.5 + (12 - 6.5 \times 1.2) ] \times 3.2 - 45 \div (2.5 \times 1.8)$
-18. $[ (25 - 10.8 \div 1.8) \times 0.5 + 7.2 ] \times 3.6 - \sqrt{64} \times 2.5$
-19. $7.6 \times (4.8 + 6.2 \div 2) - [ (9.3 - 5.7) \times 3 + 12 ]$
-20. $[ (15^2 - 80) \div 11 + 4.2 \times 3 ] \div 2.5 + 32.4 \div (1.8 \times 0.6)$
-21. 已知$\sin30^\circ = 0.5$，$\cos60^\circ = 0.5$，计算：$[ (2.5 + 3\sin30^\circ)^3 - |4.8 - 6\cos60^\circ| \times 5 ] \div \log_{10}100 + 4! \times 0.7$
-22. 计算：$\left( \frac{3}{4} \times 1.6 - \frac{5}{6} \div \frac{2}{3} \right) \times \sqrt[3]{27} + [ (7.2 - \pi \times 1) \times 2 + 1.8 ]$（$\pi$取 3.14）
-23. 若$a = 2.5$，$b = -3$，求：$|a^2 + 2ab| - \sqrt{b^2 + 16} \times \left( \frac{1}{a} + \frac{1}{b} \right) + 5^0 \times 4.2$
-24. 计算：$\left[ (12 - 3.6 \div \frac{3}{5}) \times \frac{2}{3} + \lg1000 \right] \div (0.6 + \tan45^\circ) - 6.3 \div 0.9 \times \frac{1}{7}$
-25. 已知$x = 4$，$y = 0.5$，计算：$\frac{x^3 - \sqrt{y} \times 8}{2x - 5y} + [ (3.5 + 2y) \times 4 - \log_2 8 ] \times 1.2$
-26. 计算：$\left( \frac{5}{8} + 0.375 \right) \times (6.4 - \sqrt[3]{64}) + [ (10 - 2.1 \times 3) \div 0.7 + \cos0^\circ ] \times 2.5$
-27. 若$m = -1.2$，$n = 5$，求：$\left( m^2 \times n - \frac{|m|}{n} \right) \div (n - 4) + \sqrt{m^2 + 14.44} \times 3^2$
-28. 计算：$\left[ (15 \times \frac{2}{3} - 4.2) \div 1.6 + \ln e^3 \right] \times (2.8 + \sin90^\circ) - \frac{7}{10} \times 8 \div 0.4$
-29. 已知$p = 3$，$q = \frac{1}{3}$，计算：$p^q \times (q^{-1} - p) + \sqrt{p^2 + q^2} \div (p + q) - |6p - 20q| \times 0.1$
-30. 计算：$\left( \frac{7}{9} \times 1.8 - 1.2 \times \frac{5}{6} \right) \times \sqrt{49} + [ (8 - 2^3 \div 1.6) \times \pi - 2.6 ]$（$\pi$取 3.14）
-31. 已知方程 3 (x - 2) + 5 = 2x + 7，求 x 的值，并计算此时 x² + 2x - 1 的结果
-32. 一个长方形的长为 (√16 + 2.5) 厘米，宽为 (8/3 × 1.5) 厘米，求该长方形的周长和面积（结果保留一位小数）
-33. 计算：\[(1/3 + 2/5) ÷ (3/4 - 1/2)] × 0.75 - ³√8 + 4.2×(1/7)
-34. 若 a = -4，b = 3，求代数式 (a³ + 2b²)÷(a + b) + |a - b| × √(b²) 的值
-35. 一个半径为 5 厘米的圆与一个边长为 8 厘米的正方形部分重叠，重叠部分面积为 12 平方厘米，求两图形未重叠部分的总面积（π 取 3.14）
-36. 计算：(2.4×10⁴)÷(6×10²) + √(121)×(3/11) - (0.25 + 3/8)÷(5/16)
-37. 解方程组：{2x + 3y = 17，3x - 2y = 6}，并计算 x + y 的平方根
-38. 计算：\[(√36 - ³√27)×(4/9 - 1/6) ] ÷ (1.25 - 3/4) + 2.5×(2/5)²
-39. 一个梯形的上底为 (√49 - 2) 分米，下底为 (10/3 ÷ 5/6) 分米，高为 (³√64 + 1.2) 分米，求该梯形的面积（结果化为分数）
-40. 一个直角三角形的两条直角边分别为$  \sqrt{25} + 2\sqrt{4}  $和$  3\sqrt{9} - \sqrt{16}  $，求斜边长度及三角形面积（结果保留整数）
-41. 影子是一种光学现象。由于物体挡住了光的传播,不能穿过不透明物体而形成的较暗区域,就是我们常说的影子。小明想知道一座水塔的高度他在同一时刻量得水塔的影长是20m,附近一根2m长的竹竿的影长是1.6m,那么这座水塔的高度是多少米?
-42. 有甲、乙、丙三筐水果，乙筐水果的质量是甲筐水果的 2 倍，甲筐水果的质量是丙筐水果的$\frac{2}{5}$，三筐水果质量之和为 66kg。甲筐水果有多少千克？
-43. 芒种是一个耕种忙碌的节气。这个时节，南方地区的人们忙着插秧种稻，北方地区的人们则忙着收麦。张伯伯家的麦子熟了，第一天收了所有麦子的 40%，第二天收了 420kg，这时已收的麦子和未收麦子的质量比是$3:1$。张伯伯家一共可以收多少千克麦子？
-44. 学校把一个底面直径是 6m，高是 2m 的圆锥形沙堆，铺到一个长是 10m、宽是 3.14m 的长方体沙坑里，可以铺多厚？
-45. 有一项绿化工程举行公开招标，有甲、乙、丙三家公司参加竞标，情况如下表。如果想尽快完工，应该选择哪两家公司合作完成？需要多少天？（甲 、乙 、 丙单独完成工程所需天数分别为10、15、30）
-46. 爸爸打算把 6 万元存入银行两年。有两种储蓄方式：第一种是存两年定期，年利率是 2.25%；第二种是先存一年定期（年利率是 1.75%），第一年到期后连本带息再存一年（年利率不变）。哪种储蓄方式获得的利息更多？
-47. 目前全球最薄的手撕钢产自中国，厚度只有 0.000015 米，约是A4纸厚度的六分之一，其中0.000015用科学记数法表示为？
-48. 已知$a\lt -1$，点$(a - 1,y_1)$，$(a,y_2)$，$(a + 1,y_3)$都在函数$y = 3x^2 + 2$的图象上，则$y_1 与 y_2 与 y_3$的大小关系应该是？
-49. 方程$\frac{5}{2x - 3} = \frac{4}{x}$的解为？
-50. 若一组数据 1，2，3，$x$，0，3，2 的众数是 3，则这组数据的中位数是？
-51. 若关于$x$的一元二次方程$x^2 + 4x + k = 0$有两个相等的实数根，则$k =$？
-52. 化简$\frac{a + 6}{2a^2 - 8} + \frac{1}{2 - a}$的结果为？
-53. 计算：$\left(\frac{1}{2}\right)^{-2} - 2\tan45^\circ + |1 - \sqrt{2}| + (\pi - 2025)^0$。
-54. $(1 + 5i)$的虚部为（）
-55. 设全集$U = \{1,2,3,4,5,6,7,8\}$，集合$A = \{1,3,5\}$，则$\complement_U A$中元素个数为（）
-56. 若双曲线$C$的虚轴长为实轴长的$\sqrt{7}$倍，则$C$的离心率为（）
-57. 若点$(a,0)(a\gt 0)$是函数$y = 2\tan(x - \frac{\pi}{3})$的图象的一个对称中心，则$a$的最小值为（）
-58. 设$f(x)$是定义在$\mathbf{R}$上且周期为$2$的偶函数，当$2\leq x\leq 3$时，$f(x) = 5 - 2x$，则$f(-\frac{3}{4}) =$（）
-59. 若直线$y = 2x + 5$是曲线$y = e^x + x + a$的切线，则$a =$\_\_\_\_。
-60. 若一个等比数列的前 4 项和为 4，前 8 项和为 68，则该等比数列的公比为\_\_\_\_。
-61. 一个箱子里有 5 个球，分别以 1～5 标号，若有放回取三次，记至少取出一次的球的个数$X$，则$E(X) =$\_\_\_\_。
-62. 在复平面内，$(1 + 3i)(3 - i)$对应的点位于第几象限？
-63. 设集合$A = \{0, -a\}$，$B = \{1, a - 2, 2a - 2\}$，若$A \subseteq B$，则$a =$（）
-64. 若$f(x) = (x + a)\ln\frac{2x - 1}{2x + 1}$为偶函数，则$a =$（）
-65. 已知椭圆$C:\frac{x^2}{3} + y^2 = 1$左、右焦点分别为$F_1$，$F_2$，直线$y = x + m$与$C$交于$A$，$B$两点，若$\triangle F_1AB$面积是$\triangle F_2AB$面积的 2 倍，则$m =$（）
-66. 已知函数$f(x) = ae^x - \ln x$在区间$(1,2)$上单调递增，则$a$最小值为（）
-67. 已知$\alpha$为锐角，$\cos\alpha = \frac{1 + \sqrt{5}}{4}$，则$\sin\frac{\alpha}{2} =$（）
-68. 记$S_n$为等比数列$\{a_n\}$的前$n$项和，若$S_4 = -5$，$S_6 = 21S_2$，则$S_8 =$（）
-69. 已知向量$\overrightarrow{a}$，$\overrightarrow{b}$满足$|\overrightarrow{a} - \overrightarrow{b}| = \sqrt{3}$，$|\overrightarrow{a} + \overrightarrow{b}| = |2\overrightarrow{a} - \overrightarrow{b}|$，则$|\overrightarrow{b}| =$\_\_\_\_。
-70. 底面边长为 4 的正四棱锥被平行于其底面的平面所截，截去一个底面边长为 2，高为 3 的正四棱锥，所得棱台的体积为\_\_\_\_。
+1. 计算：$2^{\sqrt{5}} \times 3^{\sqrt{5}} - \log_{2}7^{\sqrt{2}}$
+2. 计算：$\sqrt[3]{16} \div \sqrt{2} + \sin47^\circ \times \cos31^\circ$
+3. 计算：$\log_{5}27^{\sqrt{3}} + \tan67^\circ \div \sqrt[4]{83}$
+4. 计算：$5^{\log_{5}7} \times \sqrt{12} - \sin31^\circ \times \cos31^\circ$（精确到 0.001）
+5. 计算：$\sqrt[5]{32^3} + \log_{3}\sqrt{41} - \tan47^\circ \times \cot47^\circ$
+6. 计算：$2^{\log_{2}5} \times 3^{\log_{3}4} - \sqrt{1 - 2\sin20^\circ\cos20^\circ}$
+7. 计算：$\sqrt[4]{91} \times \sqrt{24} \div \sqrt[3]{65} + \log_{2}(\log_{2}17) \times \sin15^\circ$
+8. 计算：$10^{\lg\sqrt{5}} \times e^{\ln3} - \cos37^\circ \div \sin53^\circ + \sqrt[3]{(-2)^7}$
+9. 计算：$\log_{\sqrt{2}}8 \times \sqrt[3]{127} - \sin63^\circ \times \cos27^\circ + 4^{\frac{3}{2}}$
+10. 计算：$\sqrt{25 - 10\sqrt{6}} + \log_{4}69 \times 3^{\log_{3}2} - \tan28^\circ \times \tan62^\circ$
+11. 计算：$2^{\sqrt{2}} \times 2^{-\sqrt{2}} + \sqrt[5]{(1 - \sqrt{2})^4} - \log_{5}129 \times \sin80^\circ$（精确到 0.01）
+12. 计算：$\sqrt{3} \times \sqrt[3]{11} \div \sqrt[6]{27} + \log_{2}3 \times \log_{3}4 \times \cos10^\circ \times \sec10^\circ$
+13. 计算：$5^{\frac{1}{\ln5}} + \sqrt{(\sin50^\circ - \cos50^\circ)^5} - \log_{\sqrt{3}}27 \times \tan35^\circ$（精确到 0.001）
+14. 计算：$\sqrt[3]{16 \times 25 \times 40} + \log_{2}6 \times \log_{6}8 - \sin12^\circ \times \cos18^\circ + \cos12^\circ \times \sin18^\circ$
+15. 计算：$e^{\ln2 + \ln3} - \sqrt{1 - \cos^2100^\circ} + \log_{5}\sqrt{5} \times \sqrt[4]{81} \times \tan40^\circ$（精确到 0.01）
+16. 计算：$\sqrt{2 + \sqrt{3}} \times \sqrt{2 - \sqrt{3}} + \log_{3}9^{\sqrt{2}} \div \sqrt[3]{21} + \sin38^\circ \times \cos38^\circ \times 2$
+17. 计算：$3^{\log_{3}7 - 1} \times 2^{\log_{2}5 + 2} - \sqrt[5]{(-32)^3} + \log_{10}1000 \times \cos25^\circ \times \csc25^\circ$
+18. 计算：$\sqrt[6]{64 \times 216} \times \log_{4}2 \times \log_{2}16 - \sin^232^\circ - \cos^232^\circ + \tan55^\circ \times \tan35^\circ \times 3^{\sqrt{2}} \div 3^{\sqrt{2}}$
+19. 计算：$e^{\ln\sqrt{2}} \times 10^{\lg3} \times \sqrt[3]{(-8)^2} - \log_{2}(\log_{2}61) \times \sqrt{1 + \tan^261^\circ} + \sin70^\circ \times \cos20^\circ + \cos70^\circ \times \sin20^\circ$
+20. 计算：$\sqrt[4]{83} \times \sqrt{12} \div \sqrt[3]{31} + \log_{5}10 \times \log_{10}125 - \sqrt{(\sin15^\circ - \cos15^\circ)^2} \times 2^{\log_{2}5} + \tan80^\circ \times \tan10^\circ$（精确到 0.001）
+21. 计算：$2^{\sqrt{3}} \times 3^{\sqrt{3}} \div 6^{\sqrt{3}} + \log_{2}4^{\sqrt{5}} \times \log_{3}9^{\sqrt{2}} - \sqrt[3]{16} \times \sqrt{8} \div \sqrt[6]{32} + \sin33^\circ \times \cos67^\circ + \tan41^\circ \times \cot51^\circ - \sec65^\circ \times \csc30^\circ + \sqrt{1 - \sin^245^\circ} \times \sqrt{1 - \cos^245^\circ}$
+22. 计算：$5^{\log_{5}7} \times 7^{\log_{7}5} - \log_{\sqrt{2}}8 \times \log_{\sqrt{3}}27 + \sqrt[4]{71} \times \sqrt{24} \div \sqrt[3]{641} \times \sqrt[5]{327} + \sin15^\circ \times \cos15^\circ \times 4 - \tan21^\circ \times \tan66^\circ + \cos^220^\circ + \cos^270^\circ - \sin^235^\circ - \sin^255^\circ$
+23. 计算：$e^{\ln2 + \ln3} \times 10^{\lg5 + \lg2} - \log_{7}(\log_{2}64) \times \log_{5}(\log_{5}81) + \sqrt[7]{64} \times \sqrt[4]{27} \div \sqrt{16} \times \sqrt[9]{81} - \sin64^\circ \div \cos33^\circ + \tan25^\circ \times \tan65^\circ + \sec40^\circ \times \cos40^\circ - \csc50^\circ \times \sin50^\circ$
+24. 计算：$2^{\log_{2}3 + 2} \times 3^{\log_{3}4 - 1} - \log_{7}125 \times \log_{3}64 \div \log_{2}8 + \sqrt{27 - 10\sqrt{6}} \times \sqrt{25 + 10\sqrt{6}} + \sin31^\circ \times \cos59^\circ + \cos31^\circ \times \sin59^\circ - \tan42^\circ \times \cot48^\circ + \sqrt{1 + \tan^230^\circ} \times \sqrt{1 + \cot^230^\circ}$
+25. 计算：$\sqrt[3]{(-2)^6} \times \sqrt[4]{(3)^8} \div \sqrt[5]{(5)^10} \times \sqrt[6]{(6)^12} - \log_{\sqrt{5}}25 \times \log_{\sqrt{6}}36 \div \log_{\sqrt{7}}49 + 2^{\sqrt{12}} \times 2^{-\sqrt{32}} \times 3^{\sqrt{13}} \times 3^{-\sqrt{3}} + \sin80^\circ \times \cos10^\circ - \cos80^\circ \times \sin10^\circ + \cos^240^\circ + \sin^240^\circ - \tan10^\circ \times \tan80^\circ$
+26. 计算：$2^{\sqrt{5}} \times 3^{\sqrt{5}} \div 6^{\sqrt{5}} \times 5^{\sqrt{2}} \times 7^{\sqrt{2}} \div 35^{\sqrt{2}} \times 11^{\sqrt{7}} \times 13^{\sqrt{7}} \div 143^{\sqrt{7}} - \log_{2}8^{\sqrt{2}} \times \log_{3}27^{\sqrt{3}} \div \log_{5}125^{\sqrt{5}} \times \log_{7}343^{\sqrt{7}} \div \log_{11}1331^{\sqrt{11}} + \sqrt[3]{16} \div \sqrt{2} \times \sqrt[4]{81} \times \sqrt{24} \div \sqrt[3]{64} \times \sqrt[5]{32} \times \sqrt{18} \div \sqrt[6]{64} + \sin45^\circ \times \cos30^\circ \times \tan60^\circ \div \cot45^\circ \times \cos37^\circ \div \sin53^\circ \times \sec45^\circ \times \csc45^\circ \times \tan30^\circ$
+27. 计算：$123^{\sqrt{17}} \times 456^{\sqrt{17}} \div 56088^{\sqrt{17}} + \log_{11}1331^{2\sqrt{19}} \times \log_{13}2197^{3\sqrt{23}} - \sqrt[3]{1456} \times \sqrt{892} \div \sqrt[6]{5678} + \sin123^\circ \times \cos456^\circ + \tan789^\circ \times \cot1011^\circ - \sec1213^\circ \times \csc1415^\circ + \sqrt{1 - \sin^21617^\circ} \times \sqrt{1 - \cos^21819^\circ}$
+28. 计算：$20215^{\log_{2021}2023} \times 20237^{\log_{2023}2021} - \log_{\sqrt{171}}4913 \times \log_{\sqrt{191}}6859 + \sqrt[4]{12345} \times \sqrt{67890} \div \sqrt[3]{98765} \times \sqrt[5]{43210} + \sin234^\circ \times \cos567^\circ \times 4 - \tan890^\circ \times \tan1011^\circ + \cos^21213^\circ + \cos^21677^\circ - \sin^21890^\circ - \sin^22001^\circ$
+29. 计算：$107^{\ln2345 + \ln6789} \times 101^{\lg1011 + \lg1213} - \log_{177}(\log_{17}4913) \times \log_{189}(\log_{19}6859) + \sqrt[16]{141516} \times \sqrt[13]{171819} \div \sqrt{202122} \times \sqrt[41]{232425} - \sin2627^\circ \div \cos2829^\circ + \tan3031^\circ \times \tan3233^\circ + \sec3435^\circ \times \cos3637^\circ - \csc3839^\circ \times \sin4041^\circ$
+30. 计算：$42437^{\log_{4243}4445 + 4} \times 46477^{\log_{4647}4849 - 2} - \log_{515}132651 \times \log_{539}148877 \div \log_{565}166375 + \sqrt{5759 - 10\sqrt{6163}} \times \sqrt{5759 + 10\sqrt{6163}} + \sin6567^\circ \times \cos6971^\circ + \cos7375^\circ \times \sin7779^\circ - \tan8183^\circ \times \cot8587^\circ + \sqrt{1 + \tan^28991^\circ} \times \sqrt{1 + \cot^29395^\circ}$
+31. 计算：$\sqrt[3]{(-9799)^{10}} \times \sqrt[17]{(101103)^{12}} \div \sqrt[5]{(105107)^{14}} \times \sqrt[6]{(109111)^{16}} - \log_{\sqrt{113}}1442897 \times \log_{\sqrt{115}}1520875 \div \log_{\sqrt{117}}1601613 + 119^{\sqrt{121}} \times 119^{-\sqrt{121}} \times 123^{\sqrt{127}} \times 123^{-\sqrt{127}} + \sin129131^\circ \times \cos133137^\circ - \cos139149^\circ \times \sin151157^\circ + \cos^2159167^\circ + \sin^2173179^\circ - \tan181191^\circ \times \tan193197^\circ$
+32. 计算：$211^{\frac{1}{\ln211}} \times e^{\frac{1}{\lg e \times 223}} - \log_{227}229 \times \log_{2291}233 \times \log_{2338}239 \times \log_{2379}241 + \sqrt[3]{251 \times 257 \times 263 \times 269} \times \sqrt{271 \times 277 \div 281} \div \sqrt[4]{283 \times 293 \times 307} + \sin311313^\circ \times \cos317331^\circ + \cos337347^\circ \times \sin349353^\circ - \sqrt{1 - \cos^2359367^\circ} \times \sqrt{1 - \sin^2373379^\circ}$
+33. 计算：$\log_{383}389 \times \log_{3899}397 \times \log_{39777}401 \div \log_{40111}409 - 419^{\log_{41919}421 - 3} \times 431^{\log_{4344451}433 + 5} \times 439^{\log_{46639}443 - 2} + \sqrt{44569 + \sqrt{457}} \times \sqrt{449 - \sqrt{457}} \times \sqrt{461 + \sqrt{463}} \times \sqrt{461 - \sqrt{463}} + \tan467479^\circ \times \tan487491^\circ + \sin^2503509^\circ + \cos^2521523^\circ - \sec541547^\circ \div \csc557563^\circ$
+34. 计算：$155377^{\log_{1553}1559 + 6} \times 154567^{\log_{1567}1571 - 3} \times 1579^{\log_{177579}1583 + 8} \div 1597^{\log_{158897}1601 - 4} - \log_{168807}1607^{22} \times \log_{1609}160669^{24} \times \log_{161553}1613^{26} \div \log_{122619}1619^{28} \times \log_{122621}1621^{30} + \sqrt{161127 - 10\sqrt{1637}} \times \sqrt{162117 + 10\sqrt{1637}} \times \sqrt{165117 - 6\sqrt{1663}} \times \sqrt{161157 + 6\sqrt{1663}} + \sin16671669^\circ \times \cos16931697^\circ \times \cos16671669^\circ \times \sin16931697^\circ \times 4 - \tan17091721^\circ \times \cot17231733^\circ \times \tan17411747^\circ \times \tan17531759^\circ + \sqrt{1 + \tan^217771783^\circ} \times \sqrt{1 + \cot^217871789^\circ} \times \sqrt{1 + \tan^218011811^\circ}$
+35. 计算：$\sqrt[3]{1823 \times 1831 \times 1847 \times 1861} \times \sqrt{1867 \times 1871 \div 1873 \times 1877} \div \sqrt[4]{1879 \times 1889 \times 1901 \times 1907} \times \sqrt[5]{1913 \times 1931 \div 1933 \times 1949} - 1951^{\frac{1}{\ln197751}} \times e^{\frac{1}{\lg e \times 197773}} \times 1979^{\frac{1}{\ln1979}} \div e^{\frac{1}{\lg1987}} + \log_{1993}1997 \times \log_{1997}197799 \times \log_{199769}2003 \times \log_{20603}2011 \times \log_{20141}2017 \div \log_{2017}2027 + \sin20292039^\circ \times \cos20532063^\circ \times \cos20292039^\circ \times \sin20532063^\circ \times 2 - \sqrt{1 - \cos^220692081^\circ} \times \sqrt{1 - \sin^220832089^\circ} \times \tan20892099^\circ \times \cot20892099^\circ$
+36. 计算：$\log_{2113}21279 \times \log_{21289}2131 \times \log_{21319}2137 \times \log_{21437}2141 \times \log_{21541}2143 \div \log_{21463}2153 - 21611^{\log_{21361}2179 - 5} \times 2203^{\log_{22503}2207 + 7} \times 22143^{\log_{22153}2221 - 2} \times 223762^{\log_{2237}2239 + 9} \div 224213^{\log_{2243}2251 - 3} + \sqrt{22647 + \sqrt{2269}} \times \sqrt{224367 - \sqrt{2269}} \times \sqrt{2273 + \sqrt{22851}} \times \sqrt{228673 - \sqrt{2281}} \times \sqrt{22987 + \sqrt{22938}} \times \sqrt{22857 - \sqrt{22937}} + \tan22972309^\circ \times \tan23112333^\circ \times \sin^223392341^\circ \times \cos^223472351^\circ \times 4 - \sec23572371^\circ \div \csc23772381^\circ \times \cos23832389^\circ \times \sin23892393^\circ$
+37. 计算：$\log_{\sqrt{37119}}31129^{23} \times \sqrt[3]{31213137} \times \log_{\sqrt{316363}}3163^{25} \times \sqrt[4]{31673169} \div \log_{\sqrt{31841}}3181^{27} \times \sqrt[5]{318731591} \times \log_{\sqrt{356203}}3203^{29} \times \sqrt[6]{32093213} \div \log_{\sqrt{352221}}3221^{31} \times \sqrt[7]{322935251} - 3253^{\log_{325583}3257} \times \sqrt{325932761} \times 3299^{\log_{32499}3301} \times \sqrt[3]{330773313} \div 3319^{\log_{331789}3323} \times \sqrt[4]{33293331} \times 33453^{\log_{33243}3347} \times \sqrt{33593361} \div 3371^{\log_{3371}35373} \times \sqrt[5]{33893391} + \sin34073413^\circ \times \cos34333449^\circ \times \tan34573461^\circ \times \cot34633467^\circ \times \cos34693491^\circ \times \sin34993511^\circ \times 2 - \tan35173527^\circ \times \tan35293533^\circ \times \sin35393541^\circ \times \cos35473559^\circ \times 4 \times \tan35713581^\circ \times \cot35813583^\circ$
+57. 计算：$\sqrt[3]{445844657 \times 442663 \times 4481 \times 4483 \times 4493} \times \sqrt{450257 \times 4513 \div 4517 \times 4519 \times 4523} \div \sqrt[4]{4547 \times 4552549 \times 4561 \times 4567 \times 425583} \times \sqrt[5]{4532591 \times 4597 \div 4603 \times 4621 \times 4637} \times \sqrt[6]{4639 \times 46425543 \div 4649 \times 4651 \times 4657} - 46315563^{\frac{1}{\ln4663}} \times 6532158^{\frac{1}{\lg 235841 \times 4673325}} \times 4679^{\frac{1}{\ln46265879}} \div e^{\frac{1}{\lg46926511}} \times 4732544103^{\frac{1}{\ln4702553}} \times e^{\frac{1}{\lg e \times 47225841}} \div 473268423^{\frac{1}{\ln4723}} \times e^{\frac{1}{\lg414468729}} + \log_{47365533}4751 \times \log_{47526551}4759 \times \log_{425698759}4783 \times \log_{478265583}4787 \times \log_{47836547}4789 \times \log_{4789}426548793 \div \log_{47255493}4799 \times \log_{26554799}4801 \times \log_{48026551}4813 \div \log_{445813}4817 + \sin48314861^\circ \times \cos48714877^\circ \times \cos48314861^\circ \times \sin48714877^\circ \times 2 \times \sin48894903^\circ \times \cos49094919^\circ \times \cos48894903^\circ \times \sin49094919^\circ \times 2 - \sqrt{1 - \cos^249314933^\circ} \times \sqrt{1 - \sin^249374943^\circ} \times \tan49514951^\circ \times \cot49514951^\circ \times \sqrt{1 - \cos^249574967^\circ} \times \sqrt{1 - \sin^249694973^\circ} \times \tan49874993^\circ \times \cot49874993^\circ$
