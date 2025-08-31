@@ -74,8 +74,8 @@ def run_import_check(import_file: str) -> tuple[bool, str]:
 
 
 def main():
-    source_file = "my_code.py"
-    target_file = "import_try.py"
+    source_file = "agent_generate_code/my_code.py"
+    target_file = "agent_generate_code/import_try.py"
 
     # 提取导入语句
     extract_imports(source_file, target_file)
