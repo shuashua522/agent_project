@@ -232,4 +232,9 @@ def func(problem):
 
     # return remove_code_run_prefix(last_message.content)  # 返回最后一个消息
 
-func("门窗传感器剩余电量是否充足")
+# func("网关现在连的是什么WiFi，状况如何？")
+# func("门窗关了没")
+# func("现在光照如何？")
+# func("门窗传感器剩余电量是否充足")
+# func("关闭插座")
+# func("切换插座状态")
