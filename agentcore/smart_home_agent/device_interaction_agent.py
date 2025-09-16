@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Annotated, List
+from typing import Annotated, List, Callable
 from langchain_core.tools import tool
 import requests
 from typing import Dict, List, Union  # Union 用于表示"或"关系
@@ -10,6 +10,10 @@ from langgraph.prebuilt import ToolNode
 from langgraph.graph import StateGraph, MessagesState, START, END
 import json
 from typing import Dict, Optional, List
+
+from agent_project.agentcore.commons.base_agent import BaseToolAgent
+from agent_project.agentcore.commons.utils import get_llm
+from agent_project.agentcore.config.global_config import HOMEASSITANT_AUTHORIZATION_TOKEN, get_context_logger
 
 """
     langgraph关于工具调用的官方文档：
@@ -23,7 +27,15 @@ from typing import Dict, Optional, List
     https://developers.home-assistant.io/docs/api/rest/?_highlight=api
 """
 
-token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkNzgwYTkyZGI2OTE0ZWExYTg2OGE1NmQ5ODcwOTU0OCIsImlhdCI6MTc1NjExODAwMywiZXhwIjoyMDcxNDc4MDAzfQ.DD600u9b5nGB0AwzVoIhonY2ACOs43Vp3IVvL5XN5aw"
+logger = get_context_logger()
+token=HOMEASSITANT_AUTHORIZATION_TOKEN
+
+# 模拟数据的文件所在目录
+mock_data_dir = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),  # 当前文件所在目录
+    'test_mock_data'  # 子目录（无开头斜杠）
+)
+
 
 def extract_entity_by_id(json_file_path: str, target_entity_id: str) -> Optional[Dict]:
     """
@@ -62,47 +74,7 @@ def extract_entity_by_id(json_file_path: str, target_entity_id: str) -> Optional
                 break
     return target_entity
 
-def get_llm(provider):
-    # 创建配置解析器对象
-    config = configparser.ConfigParser()
-    # 读取INI文件
-    config.read('my_config.ini', encoding='utf-8')
-    # 设置LangSmith跟踪开关和API密钥
-    os.environ["LANGSMITH_TRACING"] = config.get('LangSmith', 'langsmith_tracing')
-    os.environ["LANGSMITH_API_KEY"] = config.get('LangSmith', 'langsmith_api_key')
-
-    # provider = "doubao"
-    model = config.get(provider, 'model')
-    base_url = config.get(provider, 'base_url')
-    api_key = config.get(provider, 'api_key')
-
-    llm = None
-    if (provider == "openai"):
-        proxies = {
-            'http': 'http://127.0.0.1:33210',  # HTTP 请求使用 33210 端口的 HTTP 代理
-            'https': 'http://127.0.0.1:33210',  # HTTPS 请求使用 33210 端口的 HTTP 代理
-        }
-        import httpx
-        httpx_client = httpx.Client()
-        httpx_client.proxies = proxies
-
-        llm = init_chat_model(
-            model=model,
-            model_provider="openai",
-            api_key=api_key,
-            base_url=base_url,
-            temperature=0,
-            http_client=httpx_client
-        )
-    else:
-        llm = init_chat_model(
-            model=model,
-            model_provider="openai",
-            api_key=api_key,
-            base_url=base_url,
-            temperature=0,
-        )
-    return llm
+# TODO 将这几个工具都支持获取模拟数据
 @tool
 def get_all_entity_id()-> Union[Dict, List]:
     """
@@ -122,7 +94,8 @@ def get_all_entity_id()-> Union[Dict, List]:
     # response.raise_for_status()
     # # 返回JSON响应内容
     # return response.json()
-    with open("selected_entities.json", 'r', encoding='utf-8') as f:
+    file_path=os.path.join(mock_data_dir, 'selected_entities.json')
+    with open(file_path, 'r', encoding='utf-8') as f:
         # 解析JSON文件并返回Python对象
         return json.load(f)
 @tool
@@ -151,13 +124,15 @@ def get_services_by_domain(domain) -> Union[Dict, List]:
         # 若未找到目标 domain，返回空字典
     return {}
 
+
 @tool
 def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状态"],) -> Union[Dict, List]:
     """
     Returns a state object for specified entity_id.
     Returns 404 if not found.
     """
-    return extract_entity_by_id("selected_entities.json",entity_id)
+    file_path = os.path.join(mock_data_dir, 'selected_entities.json')
+    return extract_entity_by_id(file_path,entity_id)
 
     # headers = {
     #     "Authorization": f"Bearer {token}",
@@ -226,55 +201,37 @@ def tools_test():
         "entity_id": "switch.cuco_cn_269067598_cp1_on_p_2_1"
     }))
 
-tools=[get_all_entity_id,get_services_by_domain,get_states_by_entity_id,execute_domain_service_by_entity_id]
+class DeviceInteractionAgent(BaseToolAgent):
+    def get_tools(self) -> List[Callable]:
+        tools=[get_all_entity_id,
+               get_services_by_domain,
+               get_states_by_entity_id,
+               execute_domain_service_by_entity_id]
+        return tools
 
-llm=get_llm("doubao")
-llm_with_tools = llm.bind_tools(tools)
-# print(llm_with_tools.invoke("一共有哪些entity_id？"))
+    def call_tools(self, state: MessagesState):
+        llm = get_llm().bind_tools(self.get_tools())
+        prompt = f"""
+                    根据用户的指定，调用提供的工具来获取设备状态或者操作设备
+                    """
+        system_message = {
+            "role": "system",
+            "content": prompt,
+        }
+        response = llm.invoke([system_message] + state["messages"])
+        return {"messages": [response]}
 
-tool_node = ToolNode(tools)
+@tool
+def deviceInteractionTool(task: Annotated[str, "与智能家居设备交互的自然语言描述"])->str:
+    """
+        能够根据任务描述，获取设备状态或者操作设备
+        :示例1:
+            task="关闭插座":
+        :示例2:
+            task="获取当前光照强度"
 
-def should_continue(state: MessagesState):
-    messages = state["messages"]
-    last_message = messages[-1]
-    if last_message.tool_calls:
-        return "tools"
-    return END
-
-def call_model(state: MessagesState):
-    messages = state["messages"]
-    response = llm_with_tools.invoke(messages)
-    return {"messages": [response]}
-
-builder = StateGraph(MessagesState)
-
-# Define the two nodes we will cycle between
-builder.add_node("call_model", call_model)
-builder.add_node("tools", tool_node)
-
-builder.add_edge(START, "call_model")
-builder.add_conditional_edges("call_model", should_continue, ["tools", END])
-builder.add_edge("tools", "call_model")
-
-agent = builder.compile()
-
-# problem="关闭插座"
-# agent.invoke({"messages": [{"role": "user", "content": problem}]})
-
-def func(problem):
-    last_message = None  # 初始化最后一个消息变量
-
-    for step in agent.stream(
-            {"messages": [{"role": "user", "content": problem}]},
-            stream_mode="values",
-    ):
-        last_message = step["messages"][-1]  # 更新最后一个消息
-        # 如果你不需要打印中间步骤，可以移除下面这行
-        last_message.pretty_print()
-
-    # return remove_code_run_prefix(last_message.content)  # 返回最后一个消息
-
-# func("网关现在连的是什么WiFi，状况如何？")
+    """
+    return DeviceInteractionAgent().run_agent(task)
 # func("门窗关了没")
 # func("现在光照如何？")
 # func("门窗传感器剩余电量是否充足")
@@ -282,13 +239,13 @@ def func(problem):
 # func("切换插座状态")
 # func("当前光照充足时，切换插座状态")
 
-# 周期性是明确的，每天..每周。
-# 把工具调工具，持续查某个状态（每隔一段时间，查到才返回
-# while(tr):
-#     if.then=
-#     if用生成的代码来判断满不满足
-#     agent(if.then)
+if __name__ == "__main__":
+    # DeviceInteractionAgent().run_agent("网关现在的网络状况如何？")
 
 
-## 了解MCP协议
-
+    # print(mock_data_dir)
+    # file_path = os.path.join(mock_data_dir, 'selected_entities.json')
+    # with open(file_path, 'r', encoding='utf-8') as f:
+    #     # 解析JSON文件并返回Python对象
+    #     print(json.load(f))
+    pass

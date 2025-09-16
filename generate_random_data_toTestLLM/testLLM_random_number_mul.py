@@ -7,7 +7,7 @@ import configparser
 import logging
 import time
 
-from agent_project.utils.qq_email_sender import send_email_to_self
+from agent_project.utils.wy163_email_sender import send_email_to_self
 
 
 def setup_file_logger(log_file, level=logging.INFO):
@@ -141,11 +141,16 @@ def llm_func(n,provider,logger):
 
     logger.info(f"llm执行时长: {end_time - start_time:.3f} 秒\n")
 
+    if(str(std_answer).strip()==str(llm_answer).strip()):
+        if(n==55):
+            return
+        llm_func(n+1, provider, logger)
+
 def main_for_llm():
     # providers = ["doubao", "deepseek"]
-    providers = ["deepseek"]
+    providers = ["uniapi-llms"]
     # problem_len = [38, 42]
-    problem_len = [47]
+    problem_len = [51]
 
     """创建并运行指定数量的线程"""
     threads = []
