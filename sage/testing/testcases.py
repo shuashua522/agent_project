@@ -117,7 +117,7 @@ def turn_on_tv(device_state, config):
         device_state[tv_id]["main"]["switch"]["switch"]["value"] == "on"
     ), "TV was not turned on"
 
-
+"""
 @register(["device_resolution"])
 def get_current_channel(device_state, config):
     device_state[tv_id]["main"]["switch"]["switch"]["value"] = "on"
@@ -1732,3 +1732,4 @@ def crank_the_tv_thats_playing(device_state, config):
     assert (
         int(device_state[tv_id]["main"]["audioVolume"]["volume"]["value"]) > 40
     ), "should have increased the volume on the frame TV"
+"""

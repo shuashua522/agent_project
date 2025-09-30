@@ -102,8 +102,8 @@ class TestDemoConfig:
     wandb_tracing: bool = False
     logpath: str = "test"
     # TODO 先用豆包看看
-    evaluator_llm = GPTConfig(model_name="ep-20250805172515-6d5kv", temperature=0.0).instantiate()
-    model_name: str = "ep-20250805172515-6d5kv"
+    evaluator_llm = GPTConfig(temperature=0.0).instantiate()
+    model_name: str = "gpt-4"
     # model_name: str = "gpt-4"
 
     # Resume the run from a previous run folder
