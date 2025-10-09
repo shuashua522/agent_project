@@ -13,10 +13,10 @@ from langchain_core.messages import AIMessage
 
 from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm
-from agent_project.agentcore.config.global_config import COMMON_TOOLS, get_context_logger
+from agent_project.agentcore.config.global_config import COMMON_TOOLS
 from pathlib import Path
 
-logger = get_context_logger()
+
 
 common_tools = COMMON_TOOLS
 

@@ -13,7 +13,8 @@ from typing import Dict, Optional, List
 
 from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm
-from agent_project.agentcore.config.global_config import HOMEASSITANT_AUTHORIZATION_TOKEN, get_context_logger
+from agent_project.agentcore.config.global_config import HOMEASSITANT_AUTHORIZATION_TOKEN, HOMEASSITANT_SERVER, \
+    ACTIVE_PROJECT_ENV
 
 """
     langgraph关于工具调用的官方文档：
@@ -27,8 +28,10 @@ from agent_project.agentcore.config.global_config import HOMEASSITANT_AUTHORIZAT
     https://developers.home-assistant.io/docs/api/rest/?_highlight=api
 """
 
-logger = get_context_logger()
+
 token=HOMEASSITANT_AUTHORIZATION_TOKEN
+server=HOMEASSITANT_SERVER
+active_project_env=ACTIVE_PROJECT_ENV
 
 # 模拟数据的文件所在目录
 mock_data_dir = os.path.join(
@@ -81,49 +84,51 @@ def get_all_entity_id()-> Union[Dict, List]:
     Returns an array of state objects.
     Each state has the following attributes: entity_id, state, last_changed and attributes.
     """
-    # headers = {
-    #     "Authorization": f"Bearer {token}",
-    #     "Content-Type": "application/json"
-    # }
-    #
-    # url = "http://localhost:8123/api/states"
-    #
-    # # 发送GET请求
-    # response = requests.get(url, headers=headers)
-    # # 检查请求是否成功
-    # response.raise_for_status()
-    # # 返回JSON响应内容
-    # return response.json()
-    file_path=os.path.join(mock_data_dir, 'selected_entities.json')
-    with open(file_path, 'r', encoding='utf-8') as f:
-        # 解析JSON文件并返回Python对象
-        return json.load(f)
+    if active_project_env=="dev":
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+        url = f"http://{server}/api/states"
+
+        # 发送GET请求
+        response = requests.get(url, headers=headers)
+        # 检查请求是否成功
+        response.raise_for_status()
+        # 返回JSON响应内容
+        return response.json()
+    elif active_project_env=="test":
+        file_path=os.path.join(mock_data_dir, 'selected_entities.json')
+        with open(file_path, 'r', encoding='utf-8') as f:
+            # 解析JSON文件并返回Python对象
+            return json.load(f)
 @tool
 def get_services_by_domain(domain) -> Union[Dict, List]:
     """
     return all services included in the domain.
     """
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
+    if active_project_env == "dev":
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
 
-    url = "http://localhost:8123/api/services"
+        url = f"http://{server}/api/services"
 
-    # 发送GET请求
-    response = requests.get(url, headers=headers)
-    # 检查请求是否成功
-    response.raise_for_status()
-    # 返回JSON响应内容
-    all_domain_and_services = response.json()
-    for domain_entry in all_domain_and_services:
-        # 匹配目标 domain
-        if domain_entry.get("domain") == domain:
-            # 返回该 domain 对应的 services 字典
-            return domain_entry
-        # 若未找到目标 domain，返回空字典
-    return {}
-
+        # 发送GET请求
+        response = requests.get(url, headers=headers)
+        # 检查请求是否成功
+        response.raise_for_status()
+        # 返回JSON响应内容
+        all_domain_and_services = response.json()
+        for domain_entry in all_domain_and_services:
+            # 匹配目标 domain
+            if domain_entry.get("domain") == domain:
+                # 返回该 domain 对应的 services 字典
+                return domain_entry
+            # 若未找到目标 domain，返回空字典
+        return {}
 
 @tool
 def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状态"],) -> Union[Dict, List]:
@@ -131,58 +136,60 @@ def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状�
     Returns a state object for specified entity_id.
     Returns 404 if not found.
     """
-    file_path = os.path.join(mock_data_dir, 'selected_entities.json')
-    return extract_entity_by_id(file_path,entity_id)
+    if active_project_env == "dev":
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
 
-    # headers = {
-    #     "Authorization": f"Bearer {token}",
-    #     "Content-Type": "application/json"
-    # }
-    #
-    # url = f"http://localhost:8123/api/states/{entity_id}"
-    #
-    # # 发送GET请求
-    # response = requests.get(url, headers=headers)
-    # # 检查请求是否成功
-    # response.raise_for_status()
-    # # 返回JSON响应内容
-    # return response.json()
+        url = f"http://{server}/api/states/{entity_id}"
+
+        # 发送GET请求
+        response = requests.get(url, headers=headers)
+        # 检查请求是否成功
+        response.raise_for_status()
+        # 返回JSON响应内容
+        return response.json()
+    elif active_project_env == "test":
+        file_path = os.path.join(mock_data_dir, 'selected_entities.json')
+        return extract_entity_by_id(file_path,entity_id)
+
+
 @tool
 def execute_domain_service_by_entity_id(
         domain: Annotated[str, "entity_id的前缀即为对应的domain，比如某一entity_id为switch.cuco_cn_269067598_cp1_on_p_2_1，其domain即为switch"],
         service: Annotated[str, "通过调用工具@get_services_by_domain获取对应domain下的所有的services，从中选择需要执行的服务"],
-        entity_id: Annotated[str, "通过调用工具@get_all_entity_id可以获取所有的entity_id，从中选择所需的entity_id进行操作。"],
+        body: Annotated[str, """'Content-Type': 'application/json'。请求体至少包含'entity_id'(body中有且仅能出现一个entity_id)，如果service还需要其他的参数，请补足。
+                             通过调用工具@get_all_entity_id可以获取所有的entity_id，从中选择所需的entity_id进行操作。"""],
     ) -> Union[Dict, List]:
     """
     Calls a service within a specific domain. Will return when the service has been executed.
-    You can pass an optional JSON object to be used as service_data.
-    {
-        "entity_id": "light.Ceiling"
-    }
 
     Returns a list of states that have changed while the service was being executed, and optionally response data, if supported by the service.
     """
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
+    if active_project_env == "dev":
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
 
-    url = f"http://localhost:8123/api/services/{domain}/{service}"
-    # 设置请求体数据
-    payload = {
-        "entity_id": entity_id
-    }
+        url = f"http://{server}/api/services/{domain}/{service}"
+        # 设置请求体数据
+        # payload = {
+        #     "entity_id": entity_id
+        # }
+        payload = json.loads(body)
 
-    # 发送POST请求
-    response = requests.post(
-        url=url,
-        json=payload,  # 自动将字典转换为JSON并设置正确的Content-Type
-        headers=headers
-    )
-    # 检查请求是否成功
-    response.raise_for_status()
-    # 返回JSON响应
-    return response.json()
+        # 发送POST请求
+        response = requests.post(
+            url=url,
+            json=payload,  # 自动将字典转换为JSON并设置正确的Content-Type
+            headers=headers
+        )
+        # 检查请求是否成功
+        response.raise_for_status()
+        # 返回JSON响应
+        return response.json()
 
 def tools_test():
     # 正确调用无参数工具

@@ -37,5 +37,6 @@ def smart_home_agent_tool(problem:str):
     return SmartHomeAgent().run_agent(problem)
 
 if __name__ == "__main__":
+    SmartHomeAgent().run_agent("光照是否充足")
     # SmartHomeAgent().run_agent("每隔一天，检查光照是否充足")
     pass

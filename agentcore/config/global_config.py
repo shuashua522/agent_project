@@ -96,35 +96,13 @@ load_functions_to_tools()
 
 
 #===================================== 日志
-def get_context_logger(log_file=None, name=__name__):
-    """配置能自动打印模块、类、函数信息的日志器"""
-    # 处理默认日志文件路径
-    if log_file is None:
-        # 这里使用最新的 config_dir 值
-        log_file = os.path.join(config_dir, 'agent_call.log')
-    # 确保日志目录存在
-    log_dir = Path(log_file).parent
-    log_dir.mkdir(parents=True, exist_ok=True)
 
-    # 格式化字符串：包含模块、函数、行号等信息
-    formatter = logging.Formatter(
-        '%(asctime)s - %(levelname)s - [%(module)s:%(funcName)s:%(lineno)d] - %(message)s'
-    )
-
-    # 创建处理器
-    file_handler = logging.FileHandler(log_file, encoding='utf-8')
-    console_handler = logging.StreamHandler()
-    file_handler.setFormatter(formatter)
-    console_handler.setFormatter(formatter)
-
-    # 配置日志器
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-
-    return logger
-
+GLOBAL_AGENT_DETAILED_LOGGER=None
 
 #===================================== homeassitant 配置相关
-HOMEASSITANT_AUTHORIZATION_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkNzgwYTkyZGI2OTE0ZWExYTg2OGE1NmQ5ODcwOTU0OCIsImlhdCI6MTc1NjExODAwMywiZXhwIjoyMDcxNDc4MDAzfQ.DD600u9b5nGB0AwzVoIhonY2ACOs43Vp3IVvL5XN5aw"
+# HOMEASSITANT_AUTHORIZATION_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkNzgwYTkyZGI2OTE0ZWExYTg2OGE1NmQ5ODcwOTU0OCIsImlhdCI6MTc1NjExODAwMywiZXhwIjoyMDcxNDc4MDAzfQ.DD600u9b5nGB0AwzVoIhonY2ACOs43Vp3IVvL5XN5aw"
+HOMEASSITANT_AUTHORIZATION_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI0ZmJhOTBjMzQ4Njg0MGQyOTQ2N2VjNTkwYTk1MGE5ZSIsImlhdCI6MTc1OTkzNDMyOSwiZXhwIjoyMDc1Mjk0MzI5fQ.MOhOO6iyt1af_4asc8ctZvB3623D6Cbz7UibA5H4GG4"
+HOMEASSITANT_SERVER = "123.57.153.73:8123"
+
+#===================================== 环境：test、dev、pro
+ACTIVE_PROJECT_ENV="dev"
