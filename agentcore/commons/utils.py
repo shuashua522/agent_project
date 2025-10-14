@@ -2,16 +2,21 @@ import configparser
 import logging
 import os
 import re
+import warnings
 from pathlib import Path
+from typing import Any, Dict
 
 from langchain.chat_models import init_chat_model
+from langchain_core.callbacks import BaseCallbackHandler, CallbackManager
 
+import agent_project.agentcore.config.global_config as global_config
 from agent_project.agentcore.config.global_config import MODEL, BASE_URL, API_KEY, PROXIES, PROVIDER
 
 # 获取当前文件的绝对路径
 current_file_path = os.path.abspath(__file__)
 # 定位所在目录
 current_dir = os.path.dirname(current_file_path)
+
 
 def get_llm():
 
@@ -20,29 +25,50 @@ def get_llm():
     base_url = BASE_URL
     api_key = API_KEY
 
+    callbackHandler = global_config.TOKEN_TRACKING_CALLBACK;
     llm = None
     if (provider == "openai"):
         proxies = PROXIES
         import httpx
         httpx_client = httpx.Client()
         httpx_client.proxies = proxies
-
-        llm = init_chat_model(
-            model=model,
-            model_provider="openai",
-            api_key=api_key,
-            base_url=base_url,
-            temperature=0,
-            http_client=httpx_client
-        )
+        if(callbackHandler):
+            llm = init_chat_model(
+                model=model,
+                model_provider="openai",
+                api_key=api_key,
+                base_url=base_url,
+                temperature=0,
+                http_client=httpx_client,
+                callback_manager=CallbackManager([callbackHandler]),
+            )
+        else:
+            llm = init_chat_model(
+                model=model,
+                model_provider="openai",
+                api_key=api_key,
+                base_url=base_url,
+                temperature=0,
+                http_client=httpx_client
+            )
     else:
-        llm = init_chat_model(
-            model=model,
-            model_provider="openai",
-            api_key=api_key,
-            base_url=base_url,
-            temperature=0,
-        )
+        if(callbackHandler):
+            llm = init_chat_model(
+                model=model,
+                model_provider="openai",
+                api_key=api_key,
+                base_url=base_url,
+                temperature=0,
+                callback_manager=CallbackManager([callbackHandler]),
+            )
+        else:
+            llm = init_chat_model(
+                model=model,
+                model_provider="openai",
+                api_key=api_key,
+                base_url=base_url,
+                temperature=0,
+            )
     return llm
 
 def remove_thinks(text):
@@ -84,6 +110,41 @@ def get_context_logger(log_file=None, name=__name__):
     # logger.addHandler(console_handler)
 
     return logger
+
+class TokenTrackingCallback(BaseCallbackHandler):
+    def __init__(self):
+        # 初始化总 token 计数器
+        self.total_prompt_tokens = 0  # 累计输入 token
+        self.total_completion_tokens = 0  # 累计输出 token
+        self.total_tokens = 0  # 累计总 token
+        self.token_usages=[]
+
+    def on_llm_end(self, response: Any, **kwargs: Any) -> None:
+        """
+        LLM 调用结束时触发：提取 usage_metadata 并累加
+        response: LLM 的响应对象，包含 usage_metadata 属性
+        """
+        # 检查响应是否包含 usage_metadata（避免模型不支持导致报错）
+        if hasattr(response, "llm_output") and response.llm_output:
+            usage = response.llm_output['token_usage']
+            self.token_usages.append(usage)
+            # 累加输入 token（优先取 usage 中的 prompt_tokens，无则跳过）
+            self.total_prompt_tokens += usage.get("prompt_tokens", 0)
+            # 累加输出 token（优先取 usage 中的 completion_tokens，无则跳过）
+            self.total_completion_tokens += usage.get("completion_tokens", 0)
+            # 累加总 token（若有直接返回的 total_tokens 则用，否则手动计算）
+            self.total_tokens += usage.get("total_tokens",
+                                           self.total_prompt_tokens + self.total_completion_tokens)
+        else:
+            warnings.warn("当前 LLM 响应未包含 usage_metadata，无法统计 token 消耗")
+
+    def get_agent_total_usage(self) -> Dict[str, int]:
+        """返回 Agent 执行全程的 token 总消耗"""
+        return {
+            "累计输入 token": self.total_prompt_tokens,
+            "累计输出 token": self.total_completion_tokens,
+            "累计总 token": self.total_tokens
+        }
 
 if __name__ == "__main__":
     # print(get_llm().invoke("1+1=？"))

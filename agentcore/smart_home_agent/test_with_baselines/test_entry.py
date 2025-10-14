@@ -4,7 +4,7 @@ import traceback
 
 import requests
 
-from agent_project.agentcore.commons.utils import get_context_logger
+from agent_project.agentcore.commons.utils import get_context_logger, TokenTrackingCallback
 from agent_project.agentcore.smart_home_agent.smart_home_agent_entry import SmartHomeAgent
 from agent_project.agentcore.smart_home_agent.test_with_baselines.baselines_homeassitant.sashaAgent import \
     run_sashaAgent
@@ -59,11 +59,9 @@ testcases=["将整个房子变暗","网络状况","台灯太亮了，调一下�
            "打开插座","当前光照强度","我要睡觉了","准备出门。关闭所有非必要的设备。",
            "我要起夜，台灯开一下","10分钟后关闭台灯","我要开始学习了，每40分钟提醒我休息"]
 
-def init_test_config():
+def init_test_global_config():
     """测试前都要初始化测试环境"""
-    # TODO
-    pass
-
+    global_config.TOKEN_TRACKING_CALLBACK=TokenTrackingCallback()
 def init_devices_states():
     """每次测试前都要初始化设备状态
     台灯三个mode：
@@ -99,14 +97,16 @@ def process_testcases(agent_name,dir_path=testing_logs_dir,):
     if agent_name not in ["singleAgent","sashaAgent","ourAgent"]:
         raise ValueError("无效的arg：agent_name")
 
-    dir_path = os.path.join(testing_logs_dir, agent_name)
+    dir_path = os.path.join(testing_logs_dir, global_config.MODEL, agent_name)
     # 确保目标目录存在（不存在则创建）
     os.makedirs(dir_path, exist_ok=True)
+
 
     # 遍历测试用例
     for index, question in enumerate(testcases):
         # if(index+1)>=8:
         #     continue
+        init_test_global_config()
         init_devices_states()
         # 处理文件名：移除特殊字符，确保文件名合法
         # 保留中文、字母、数字和下划线，其他字符替换为下划线
@@ -119,7 +119,7 @@ def process_testcases(agent_name,dir_path=testing_logs_dir,):
         # 调用agent
         logger=get_context_logger(log_file=log_file, name=f"{agent_name}_{index}")
         global_config.GLOBAL_AGENT_DETAILED_LOGGER=logger
-        logger.info("test")
+        logger.info(f"test-{global_config.PROVIDER}")
         try:
             if agent_name=="singleAgent":
                 SingleAgent(logger=logger).run_agent(question)
@@ -142,10 +142,13 @@ def process_testcases(agent_name,dir_path=testing_logs_dir,):
 
             # （可选）若需要向上层传递异常，可取消注释下面一行（根据业务需求决定）
             # raise
+        callback = global_config.TOKEN_TRACKING_CALLBACK;
+        logger.info(callback.get_agent_total_usage())
 
 def main(agent_name):
     process_testcases(agent_name=agent_name)
 
 
 if __name__=="__main__":
-    main("ourAgent")
+    # main("ourAgent")
+    pass

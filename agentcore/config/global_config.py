@@ -98,6 +98,7 @@ load_functions_to_tools()
 #===================================== 日志
 
 GLOBAL_AGENT_DETAILED_LOGGER=None
+TOKEN_TRACKING_CALLBACK=None
 
 #===================================== homeassitant 配置相关
 # HOMEASSITANT_AUTHORIZATION_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkNzgwYTkyZGI2OTE0ZWExYTg2OGE1NmQ5ODcwOTU0OCIsImlhdCI6MTc1NjExODAwMywiZXhwIjoyMDcxNDc4MDAzfQ.DD600u9b5nGB0AwzVoIhonY2ACOs43Vp3IVvL5XN5aw"

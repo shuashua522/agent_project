@@ -1,0 +1,62 @@
+2025-10-13 14:26:49,123 - INFO - [test_entry:process_testcases:122] - test-uniapi
+2025-10-13 14:26:49,130 - INFO - [base_agent:run_agent:81] - ================================ Human Message =================================
+
+10分钟后关闭台灯
+2025-10-13 14:26:52,052 - INFO - [base_agent:run_agent:81] - ================================== Ai Message ==================================
+Tool Calls:
+  persistentCommandTool (call_YSPCPFpVae7c2Feb6LV3DbbN)
+ Call ID: call_YSPCPFpVae7c2Feb6LV3DbbN
+  Args:
+    task: 在10分钟后关闭台灯
+2025-10-13 14:26:52,075 - INFO - [base_agent:run_agent:81] - ================================ Human Message =================================
+
+在10分钟后关闭台灯
+2025-10-13 14:26:58,011 - INFO - [base_agent:run_agent:81] - ================================== Ai Message ==================================
+Tool Calls:
+  generateTaskToQueueTool (call_DaNs0q4kijQxM4tacH4of4NJ)
+ Call ID: call_DaNs0q4kijQxM4tacH4of4NJ
+  Args:
+    task_desc: 10分钟后关闭台灯
+    action_statement: 当时间规则在10分钟后执行一次时，执行关闭台灯的操作（调用台灯控制接口）。
+    time_ruler: 在10分钟后执行一次
+2025-10-13 14:26:58,114 - INFO - [base_agent:run_agent:81] - ================================ Human Message =================================
+
+{"task_desc": "10分钟后关闭台灯", "action_statement": "当时间规则在10分钟后执行一次时，执行关闭台灯的操作（调用台灯控制接口）。", "time_ruler": "在10分钟后执行一次"}
+2025-10-13 14:27:16,002 - INFO - [base_agent:run_agent:81] - ================================== Ai Message ==================================
+Tool Calls:
+  add_conditional_task_to_queue (call_6surFupkTyHbfWmk91LDIKRI)
+ Call ID: call_6surFupkTyHbfWmk91LDIKRI
+  Args:
+    task_desc: 10分钟后关闭台灯
+    action_statement: 当时间规则在10分钟后执行一次时，执行关闭台灯的操作（调用台灯控制接口）。
+    condition_func_code: def check_time_after_10min():
+    from datetime import datetime, timedelta
+    # 第一次调用时设置目标时间为当前时间加10分钟，并保存在函数属性中以便后续调用保持不变
+    if not hasattr(check_time_after_10min, "target"):
+        check_time_after_10min.target = datetime.now() + timedelta(minutes=10)
+    return datetime.now() >= check_time_after_10min.target
+
+    condition_func_name: check_time_after_10min
+    interval_setting: {'seconds': 10}
+2025-10-13 14:27:16,006 - INFO - [base_agent:run_agent:81] - ================================= Tool Message =================================
+Name: add_conditional_task_to_queue
+
+null
+2025-10-13 14:27:17,444 - INFO - [base_agent:run_agent:81] - ================================== Ai Message ==================================
+
+已为您创建条件触发任务：10分钟后关闭台灯。任务将每10秒检查一次条件，满足时会执行“关闭台灯”的操作。
+2025-10-13 14:27:17,445 - INFO - [base_agent:run_agent:81] - ================================= Tool Message =================================
+Name: generateTaskToQueueTool
+
+已为您创建条件触发任务：10分钟后关闭台灯。任务将每10秒检查一次条件，满足时会执行“关闭台灯”的操作。
+2025-10-13 14:27:18,889 - INFO - [base_agent:run_agent:81] - ================================== Ai Message ==================================
+
+好的，我已为您安排“10分钟后关闭台灯”的任务并开始监控。到时会自动执行关闭台灯的操作。有其他需要吗？
+2025-10-13 14:27:18,891 - INFO - [base_agent:run_agent:81] - ================================= Tool Message =================================
+Name: persistentCommandTool
+
+好的，我已为您安排“10分钟后关闭台灯”的任务并开始监控。到时会自动执行关闭台灯的操作。有其他需要吗？
+2025-10-13 14:27:20,427 - INFO - [base_agent:run_agent:81] - ================================== Ai Message ==================================
+
+好的，我已帮您设置了“10 分钟后关闭台灯”的任务。到时我会自动关闭台灯。还需要我做别的吗？
+2025-10-13 14:27:20,428 - INFO - [test_entry:process_testcases:146] - {'累计输入 token': 6650, '累计输出 token': 2004, '累计总 token': 8654}

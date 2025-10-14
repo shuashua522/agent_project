@@ -29,7 +29,7 @@ def get_logger():
     logger=global_config.GLOBAL_AGENT_DETAILED_LOGGER
     if logger==None:
         logger=get_null_logger()
-        return logger
+    return logger
 class ClarificationResponse(BaseModel):
     response: str = Field(
         description="Answer by YES or NO if the task is possible or the query can be answered"

@@ -1,74 +1,106 @@
-import os
-from langgraph.graph import StateGraph, START, END
-from langchain_openai import ChatOpenAI
-from langchain.callbacks import FileCallbackHandler
-from agent_project.agentcore.config.global_config import MODEL, BASE_URL, API_KEY, PROXIES, PROVIDER
+import warnings
+
 from langchain.chat_models import init_chat_model
+from langgraph.graph import MessagesState
 
-def get_llm():
+from agent_project.agentcore.commons.base_agent import BaseToolAgent
+from agent_project.agentcore.commons.utils import get_llm
+from agent_project.agentcore.config.global_config import MODEL, BASE_URL, API_KEY, PROXIES, PROVIDER
+import agent_project.agentcore.config.global_config as global_config
 
-    provider=PROVIDER
-    model = MODEL
-    base_url = BASE_URL
-    api_key = API_KEY
 
-    llm = None
-    if (provider == "openai"):
-        proxies = PROXIES
-        import httpx
-        httpx_client = httpx.Client()
-        httpx_client.proxies = proxies
+from langchain_core.callbacks import BaseCallbackHandler, CallbackManager
+from langchain.chat_models import init_chat_model
+from typing import Any, Dict, List, Callable
+from langchain_core.tools import tool
 
-        llm = init_chat_model(
-            model=model,
-            model_provider="openai",
-            api_key=api_key,
-            base_url=base_url,
-            temperature=0,
-            http_client=httpx_client
-        )
-    else:
-        llm = init_chat_model(
-            model=model,
-            model_provider="openai",
-            api_key=api_key,
-            base_url=base_url,
-            temperature=0,
-        )
-    return llm
-# --------------------------
-# 关键：配置本地日志文件
-# --------------------------
-log_file = "langgraph_local.log"
-file_handler = FileCallbackHandler(log_file)  # LangChain 内置的文件日志处理器
+class TokenTrackingCallback(BaseCallbackHandler):
+    def __init__(self):
+        # 初始化总 token 计数器
+        self.total_prompt_tokens = 0  # 累计输入 token
+        self.total_completion_tokens = 0  # 累计输出 token
+        self.total_tokens = 0  # 累计总 token
+        self.token_usages=[]
 
-# --------------------------
-# 定义状态和节点
-# --------------------------
-class AgentState(State):
-    messages: list
+    def on_llm_end(self, response: Any, **kwargs: Any) -> None:
+        """
+        LLM 调用结束时触发：提取 usage_metadata 并累加
+        response: LLM 的响应对象，包含 usage_metadata 属性
+        """
+        # 检查响应是否包含 usage_metadata（避免模型不支持导致报错）
+        if hasattr(response, "llm_output") and response.llm_output:
+            usage = response.llm_output['token_usage']
+            self.token_usages.append(usage)
+            # 累加输入 token（优先取 usage 中的 prompt_tokens，无则跳过）
+            self.total_prompt_tokens += usage.get("prompt_tokens", 0)
+            # 累加输出 token（优先取 usage 中的 completion_tokens，无则跳过）
+            self.total_completion_tokens += usage.get("completion_tokens", 0)
+            # 累加总 token（若有直接返回的 total_tokens 则用，否则手动计算）
+            self.total_tokens += usage.get("total_tokens",
+                                           self.total_prompt_tokens + self.total_completion_tokens)
+        else:
+            warnings.warn("当前 LLM 响应未包含 usage_metadata，无法统计 token 消耗")
 
-# LLM 调用时传入日志处理器
-llm = ChatOpenAI(
-    model="gpt-3.5-turbo",
-    callbacks=[file_handler]  # 自动记录 LLM 交互到文件
-)
+    def get_agent_total_usage(self) -> Dict[str, int]:
+        """返回 Agent 执行全程的 token 总消耗"""
+        return {
+            "累计输入 token": self.total_prompt_tokens,
+            "累计输出 token": self.total_completion_tokens,
+            "累计总 token": self.total_tokens
+        }
 
-def call_llm(state: AgentState) -> AgentState:
-    response = llm.invoke(state.messages)
-    return AgentState(messages=state.messages + [response])
+# 使用示例
+callback = TokenTrackingCallback()
+# llm = init_chat_model(
+#     model="gpt-3.5-turbo",  # 可替换为其他模型（如 "claude-3-haiku-20240307"）
+#     callback_manager=CallbackManager([callback]),
+#     temperature=0
+# )
+global_config.TOKEN_TRACKING_CALLBACK=callback
 
-# --------------------------
-# 构建图时添加全局日志（可选）
-# --------------------------
-graph_builder = StateGraph(AgentState)
-graph_builder.add_node("call_llm", call_llm)
-graph_builder.add_edge(START, "call_llm")
-graph_builder.add_edge("call_llm", END)
+@tool
+def calc_nums(a,b):
+    """
+    计算任意两个数之和
+    :param a: 一个数字
+    :param b: 另一个数字
+    :return: 两个数的和
+    """
+    return a+b
+class testAgent(BaseToolAgent):
 
-# 编译图时传入日志处理器（记录节点执行）
-graph = graph_builder.compile(callbacks=[file_handler])
+    def get_tools(self) -> List[Callable]:
+        tools=[calc_nums]
+        return tools
 
-# 测试运行
-graph.invoke(AgentState(messages=[{"role": "user", "content": "什么是 LangGraph？"}]))
-print(f"日志已保存到 {os.path.abspath(log_file)}")
+    def call_tools(self, state: MessagesState):
+        system_prompt = """
+                            通过调用给定的工具回答用户问题
+                        """
+        llm = get_llm().bind_tools(self.get_tools())
+        system_message = {
+            "role": "system",
+            "content": system_prompt,
+        }
+        response = llm.invoke([system_message] + state["messages"])
+        print(response.content)
+        return {"messages": [response]}
+
+
+testAgent().run_agent("1+1=? ")
+# 打印结果
+print(f"token usage list: {callback.token_usages}")
+print(f"输入 token: {callback.total_prompt_tokens}")
+print(f"输出 token: {callback.total_completion_tokens}")
+print(f"总 token: {callback.total_tokens}")
+
+# llm=get_llm([callback])
+# # 调用模型
+# response = llm.invoke("1+1=? 直接给出结果")
+# print(response)
+# # 打印结果
+# print(f"token usage list: {callback.token_usages}")
+# print(f"输入 token: {callback.total_prompt_tokens}")
+# print(f"输出 token: {callback.total_completion_tokens}")
+# print(f"总 token: {callback.total_tokens}")
+
