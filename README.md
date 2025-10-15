@@ -95,7 +95,128 @@ sage的日志放在另一个分支
 
 
 
+**demo**
 
+```json
+[{
+		"entity_id": "number.philips_cn_1061200910_lite_notify_time_p_3_3",
+		"state": "40",
+		"attributes": {
+			"min": 1,
+			"max": 120,
+			"step": 1,
+			"mode": "auto",
+			"unit_of_measurement": "min",
+			"icon": "mdi:clock",
+			"friendly_name": "米家智能台灯Lite * 个性化功能 视疲劳提醒的时间间隔设"
+		},
+		"last_changed": "2025-10-09T02:17:40.515330+00:00",
+		"last_reported": "2025-10-09T02:17:40.515330+00:00",
+		"last_updated": "2025-10-09T02:17:40.515330+00:00",
+		"context": {
+			"id": "01K73C50X3FR24W9SC4DN5P0AD",
+			"parent_id": null,
+			"user_id": null
+		}
+	},
+	{
+		"entity_id": "switch.philips_cn_1061200910_lite_notify_switch_p_3_2",
+		"state": "off",
+		"attributes": {
+			"device_class": "switch",
+			"friendly_name": "米家智能台灯Lite * 个性化功能 开启/关闭视疲劳提醒功能 "
+		},
+		"last_changed": "2025-10-09T02:17:40.351327+00:00",
+		"last_reported": "2025-10-09T02:17:40.524307+00:00",
+		"last_updated": "2025-10-09T02:17:40.351327+00:00",
+		"context": {
+			"id": "01K73C50QZ0H7B2VD6ED7ZWM2K",
+			"parent_id": null,
+			"user_id": null
+		}
+	},
+	{
+		"entity_id": "switch.philips_cn_1061200910_lite_night_light_en_p_3_4",
+		"state": "on",
+		"attributes": {
+			"device_class": "switch",
+			"friendly_name": "米家智能台灯Lite * 个性化功能 开启/关闭夜间模式"
+		},
+		"last_changed": "2025-10-09T02:17:41.010997+00:00",
+		"last_reported": "2025-10-09T02:17:41.010997+00:00",
+		"last_updated": "2025-10-09T02:17:41.010997+00:00",
+		"context": {
+			"id": "01K73C51CJQB8981NG2VA4TNCW",
+			"parent_id": null,
+			"user_id": null
+		}
+	}
+]
+```
+
+
+
+这是让llm对隐私数据加密后的结果：（对 JSON 中隐私数据（设备标识、操作 ID、设备名称）采用**AES-128-CBC**对称加密（假设密钥为 “a1b2c3d4e5f6g7h8”，初始向量 IV 为 “8h7g6f5e4d3c2b1a”，加密结果转 Base64）后的完整 JSON，非隐私字段（如状态、时间、基础属性）保持原样。）
+
+**可以发现friendly_name会被加密，那agent怎么知道这个设备是干什么的呢。另外状态、时间、基础属性值不值得加密呢**
+
+```json
+[
+    {
+        "entity_id": "U2FsdGVkX1+QZ8t5Y2F6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w==",
+        "state": "40",
+        "attributes": {
+            "min": 1,
+            "max": 120,
+            "step": 1,
+            "mode": "auto",
+            "unit_of_measurement": "min",
+            "icon": "mdi:clock",
+            "friendly_name": "U2FsdGVkX1+9a8b7c6d5e4f3g2h1i0j9k8l7m6n5o4p3q2r1s0t9u8v7w6x5y4z=="
+        },
+        "last_changed": "2025-10-09T02:17:40.515330+00:00",
+        "last_reported": "2025-10-09T02:17:40.515330+00:00",
+        "last_updated": "2025-10-09T02:17:40.515330+00:00",
+        "context": {
+            "id": "U2FsdGVkX1+1z2y3x4w5v6u7t8s9r0q1p2o3n4m5l6k7j8i9h0g1f2e3d4c5b6a==",
+            "parent_id": null,
+            "user_id": null
+        }
+    },
+    {
+        "entity_id": "U2FsdGVkX1+2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8q9r0s1t2u3v4w5x6y7z==",
+        "state": "off",
+        "attributes": {
+            "device_class": "switch",
+            "friendly_name": "U2FsdGVkX1+3z4y5x6w7v8u9t0s1r2q3p4o5n6m7l8k9j0i1h2g3f4e5d6c7b=="
+        },
+        "last_changed": "2025-10-09T02:17:40.351327+00:00",
+        "last_reported": "2025-10-09T02:17:40.524307+00:00",
+        "last_updated": "2025-10-09T02:17:40.351327+00:00",
+        "context": {
+            "id": "U2FsdGVkX1+4a5b6c7d8e9f0g1h2i3j4k5l6m7n8o9p0q1r2s3t4u5v6w7x8y==",
+            "parent_id": null,
+            "user_id": null
+        }
+    },
+    {
+        "entity_id": "U2FsdGVkX1+5z6y7x8w9v0u1t2s3r4q5p6o7n8m9l0k1j2i3h4g5f6e7d8c9b==",
+        "state": "on",
+        "attributes": {
+            "device_class": "switch",
+            "friendly_name": "U2FsdGVkX1+6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y=="
+        },
+        "last_changed": "2025-10-09T02:17:41.010997+00:00",
+        "last_reported": "2025-10-09T02:17:41.010997+00:00",
+        "last_updated": "2025-10-09T02:17:41.010997+00:00",
+        "context": {
+            "id": "U2FsdGVkX1+7z8y9x0w1v2u3t4s5r6q7p8o9n0m1l2k3j4i5h6g7f8e9d0c1b==",
+            "parent_id": null,
+            "user_id": null
+        }
+    }
+]
+```
 
 
 
