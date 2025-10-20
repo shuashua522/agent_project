@@ -7,6 +7,8 @@ from pathlib import Path
 
 from langchain_core.tools import StructuredTool
 
+from agent_project.agentcore.smart_home_agent.privacy_handler import PrivacyHandler
+
 #======================llm
 # 获取当前文件(global_config.py)的绝对路径
 current_file_path = os.path.abspath(__file__)
@@ -107,3 +109,6 @@ HOMEASSITANT_SERVER = "62.234.0.27:8123"
 
 #===================================== 环境：test、dev、pro
 ACTIVE_PROJECT_ENV="dev"
+
+# ================================== 隐私处理
+PRIVACYHANDLER=PrivacyHandler()

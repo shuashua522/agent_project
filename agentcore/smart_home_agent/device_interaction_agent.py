@@ -14,7 +14,7 @@ from typing import Dict, Optional, List
 from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm
 from agent_project.agentcore.config.global_config import HOMEASSITANT_AUTHORIZATION_TOKEN, HOMEASSITANT_SERVER, \
-    ACTIVE_PROJECT_ENV
+    ACTIVE_PROJECT_ENV, PRIVACYHANDLER
 
 """
     langgraph关于工具调用的官方文档：
@@ -32,6 +32,7 @@ from agent_project.agentcore.config.global_config import HOMEASSITANT_AUTHORIZAT
 token=HOMEASSITANT_AUTHORIZATION_TOKEN
 server=HOMEASSITANT_SERVER
 active_project_env=ACTIVE_PROJECT_ENV
+privacyHandler=PRIVACYHANDLER
 
 # 模拟数据的文件所在目录
 mock_data_dir = os.path.join(
@@ -84,6 +85,7 @@ def get_all_entity_id()-> Union[Dict, List]:
     Returns an array of state objects.
     Each state has the following attributes: entity_id, state, last_changed and attributes.
     """
+    result=None
     if active_project_env=="dev":
         headers = {
             "Authorization": f"Bearer {token}",
@@ -97,12 +99,15 @@ def get_all_entity_id()-> Union[Dict, List]:
         # 检查请求是否成功
         response.raise_for_status()
         # 返回JSON响应内容
-        return response.json()
+        result=response.json()
+
     elif active_project_env=="test":
         file_path=os.path.join(mock_data_dir, 'selected_entities.json')
         with open(file_path, 'r', encoding='utf-8') as f:
             # 解析JSON文件并返回Python对象
-            return json.load(f)
+            result=json.load(f)
+
+    return privacyHandler.encodeEntities(result)
 @tool
 def get_services_by_domain(domain) -> Union[Dict, List]:
     """
@@ -136,6 +141,9 @@ def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状�
     Returns a state object for specified entity_id.
     Returns 404 if not found.
     """
+    entity_id=privacyHandler.decodeEntityId(entity_id)
+
+    result=None
     if active_project_env == "dev":
         headers = {
             "Authorization": f"Bearer {token}",
@@ -149,11 +157,12 @@ def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状�
         # 检查请求是否成功
         response.raise_for_status()
         # 返回JSON响应内容
-        return response.json()
+        result=response.json()
     elif active_project_env == "test":
         file_path = os.path.join(mock_data_dir, 'selected_entities.json')
-        return extract_entity_by_id(file_path,entity_id)
+        result=extract_entity_by_id(file_path,entity_id)
 
+    return privacyHandler.encodeEntity(result)
 
 @tool
 def execute_domain_service_by_entity_id(
@@ -167,6 +176,7 @@ def execute_domain_service_by_entity_id(
 
     Returns a list of states that have changed while the service was being executed, and optionally response data, if supported by the service.
     """
+    result=None
     if active_project_env == "dev":
         headers = {
             "Authorization": f"Bearer {token}",
@@ -189,7 +199,9 @@ def execute_domain_service_by_entity_id(
         # 检查请求是否成功
         response.raise_for_status()
         # 返回JSON响应
-        return response.json()
+        result= response.json()
+
+    return result
 
 def tools_test():
     # 正确调用无参数工具
