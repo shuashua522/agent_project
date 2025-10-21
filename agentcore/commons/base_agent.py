@@ -9,8 +9,6 @@ from langgraph.prebuilt import ToolNode
 from langgraph.graph import StateGraph, MessagesState, START, END
 from abc import ABC, abstractmethod
 
-import agent_project.agentcore.config.global_config as global_config
-
 
 class BaseToolAgent(ABC):
     def __init__(self,logger=None):
@@ -53,6 +51,7 @@ class BaseToolAgent(ABC):
 
         # 编译图为可运行的代理
         agent = builder.compile()
+        # agent = agent.with_config({"recursion_limit": 5})
         return agent
     def run_agent(self,problem,):
         agent=self.create_agent()
@@ -64,6 +63,7 @@ class BaseToolAgent(ABC):
         ):
             last_message = step["messages"][-1]  # 更新最后一个消息
             if not hasattr(self, 'logger') or self.logger is None:
+                import agent_project.agentcore.config.global_config as global_config
                 self.logger = global_config.GLOBAL_AGENT_DETAILED_LOGGER
             if self.logger != None:
                 # 捕获 pretty_print() 的输出内容

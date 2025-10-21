@@ -15,6 +15,7 @@ from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm
 from agent_project.agentcore.config.global_config import HOMEASSITANT_AUTHORIZATION_TOKEN, HOMEASSITANT_SERVER, \
     ACTIVE_PROJECT_ENV, PRIVACYHANDLER
+from agent_project.agentcore.smart_home_agent.privacy_handler import RequestBodyDecodeAgent
 
 """
     langgraph关于工具调用的官方文档：
@@ -175,7 +176,13 @@ def execute_domain_service_by_entity_id(
     Calls a service within a specific domain. Will return when the service has been executed.
 
     Returns a list of states that have changed while the service was being executed, and optionally response data, if supported by the service.
+
+    由于智能家居的数据已经进行加密处理，如果你需要对传入body中的某些加密数据进行算术运算。你可以用{}把加密数据包裹起来，然后在其前后加入算术运算，例如：
+    {"entity_id": "nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6", "brightness_pct": {n+4XiEGjo3K4qp1+WdooLw==:E034U68+xYq6U47e5i/isA==}*5-4}
+
     """
+
+    body=RequestBodyDecodeAgent().run_agent(body)
     result=None
     if active_project_env == "dev":
         headers = {

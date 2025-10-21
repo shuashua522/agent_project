@@ -9,8 +9,6 @@ from typing import Any, Dict
 from langchain.chat_models import init_chat_model
 from langchain_core.callbacks import BaseCallbackHandler, CallbackManager
 
-import agent_project.agentcore.config.global_config as global_config
-from agent_project.agentcore.config.global_config import MODEL, BASE_URL, API_KEY, PROXIES, PROVIDER
 
 # 获取当前文件的绝对路径
 current_file_path = os.path.abspath(__file__)
@@ -19,7 +17,8 @@ current_dir = os.path.dirname(current_file_path)
 
 
 def get_llm():
-
+    import agent_project.agentcore.config.global_config as global_config
+    from agent_project.agentcore.config.global_config import MODEL, BASE_URL, API_KEY, PROXIES, PROVIDER
     provider=PROVIDER
     model = MODEL
     base_url = BASE_URL

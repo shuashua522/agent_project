@@ -1,9 +1,16 @@
 import copy
+from typing import List, Callable, Annotated
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 import os
 import base64
+
+from langchain_core.tools import StructuredTool, tool
+from langgraph.graph import MessagesState
+
+from agent_project.agentcore.commons.base_agent import BaseToolAgent
+from agent_project.agentcore.commons.utils import get_llm
 
 
 
@@ -105,6 +112,11 @@ class PrivacyHandler:
 
 
     def decode(self,encrypted_text):
+        """
+        对加密数据进行解码
+        :param encrypted_text: 被加密的文本
+        :return: 解密后的文本
+        """
         try:
             iv_b64, ciphertext_b64 = encrypted_text.split(':')
         except ValueError:
@@ -119,9 +131,63 @@ class PrivacyHandler:
         return plaintext
 
 
-# 示例运行
-if __name__ == "__main__":
-    handler=PrivacyHandler();
+class RequestBodyDecodeAgent(BaseToolAgent):
+
+    def get_tools(self) -> List[Callable]:
+        from agent_project.agentcore.config.global_config import PRIVACYHANDLER
+        tools = [StructuredTool.from_function(PRIVACYHANDLER.decode)]
+        return tools
+
+    def call_tools(self, state: MessagesState):
+        system_prompt = """
+                    你是一名数据解密助手，你需要对用户的json字符串进行解密：
+                    1. 提取文本中的加密数据，调用工具对其解密
+                    2. 如果加密数据前后涉及数学运算，那么数据解密后，你需要计算其中的数学运算！
+
+                    需要注意的是：
+                    - 只要解密工具没有报错或者抛出异常，那么返回的文本就是解密文本。比如解密后可能得到"unavailable"这样的文本，请不要认为这是解密工具调用失败！！
+
+                    对所有加密文本解密后，并处理完毕其中涉及的算术运算后。你需要重新整理文本，返回一个json字符串！
+                """
+        llm = get_llm().bind_tools(self.get_tools())
+        system_message = {
+            "role": "system",
+            "content": system_prompt,
+        }
+        response = llm.invoke([system_message] + state["messages"])
+        print(response.content)
+        return {"messages": [response]}
+
+class ResultDecodeAgent(BaseToolAgent):
+
+    def get_tools(self) -> List[Callable]:
+        from agent_project.agentcore.config.global_config import PRIVACYHANDLER
+        tools=[StructuredTool.from_function(PRIVACYHANDLER.decode)]
+        return tools
+
+    def call_tools(self, state: MessagesState):
+        system_prompt = """
+                    你是一名数据解密助手，你需要：
+                    1. 提取文本中的加密数据
+                    2. 调用工具对其解密
+                    
+                    需要注意的是：
+                    - 只要解密工具没有报错或者抛出异常，那么返回的文本就是解密文本。比如解密后可能得到"unavailable"这样的文本，请不要认为这是解密工具调用失败！！
+                    
+                    对所有加密文本解密后，你需要重新整理文本，返回一个用户友好的文本！
+                """
+        llm = get_llm().bind_tools(self.get_tools())
+        system_message = {
+            "role": "system",
+            "content": system_prompt,
+        }
+        response = llm.invoke([system_message] + state["messages"])
+        print(response.content)
+        return {"messages": [response]}
+
+
+def testClass_PrivacyHandler():
+    handler = PrivacyHandler();
     # 1. 生成密钥（实际应用中需妥善保存，解密必须用相同密钥）
     aes_key = handler.key  # 16字节密钥
     print(handler.key)
@@ -139,3 +205,34 @@ if __name__ == "__main__":
     decrypted = handler.decode(encrypted)
     print(f"解密后：{decrypted}")
     print(f"解密是否正确：{decrypted == original_text}")  # 验证一致性
+
+def testAgent_ResultDecodeAgent():
+    encode_str = """
+        以下是小米智能多模网关2的网络状况信息：
+1. 接入方式：通过传感器`sensor.iiaBP/lw2PIoKcp4HgaPBg==:rvlB+HyVVVDqVNl690m62zrqydc4InM4LP13Sc2ttdAfN7rP6HdI8AQTHRRzEbh3`获取，状态为`lKenA1eSfYWW2M42ZpMpeg==:X6pQ9uY9erwFb/ar9npS2Q==`（注：可能为枚举值，需结合属性`options`判断，`options`为["有线", "2.4G 无线", "5G 无线"]）。
+2. IP地址：通过传感器`sensor.2GVS9z4+T1W7SrpIAu84IQ==:R1Lj7hv/2a5mO6mClHoZcPrmA+SmH4TwRFPlZzpCsNtsaD6lSZRgO0WppNGXUTLJ`获取，状态为`UD1zOyiktIc2uqQqwJWbiQ==:cTA9x4MEjtWPDmbdG6gX+w==`。
+3. WiFi网络名称(写权限无效)：通过传感器`sensor.evqqRty4VkMorDXHzq9s7Q==:Sg6idnHAkt0B/D8foGn4kQPatS5tGfoq0lRguE8GOx9r/i8sxi95tjNLRPc199I/`获取，状态为`oauVeyGF8NtnrzAeK/E5Iw==:HIhOYON0nW7IxsPUKWD80g==`。
+4. 网络变化状态：通过传感器`sensor.nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6`获取，状态为`Z91uJwX///nhsZ1RzYJ2fg==:73KwgXtROIABc7D25m8nUg==`，格式为`{access-mode:{last:0,now:1],ip:{last:xx,now:xx},wifi-ssid:{last:xx,now:xx},time:12345678}}`。
+
+        """
+    print(ResultDecodeAgent().run_agent(encode_str))
+
+def testAgent_RequestBodyDecodeAgent():
+    import json
+    # print(PrivacyHandler().encode("50"))  # n+4XiEGjo3K4qp1+WdooLw==:E034U68+xYq6U47e5i/isA==
+    # body = {
+    #     "entity_id": "nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6",
+    #     "brightness": "{n+4XiEGjo3K4qp1+WdooLw==:E034U68+xYq6U47e5i/isA==}*5-4"
+    # }
+    # body = json.dumps(body)
+    body="""
+    {"entity_id": "nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6", "brightness_pct": {n+4XiEGjo3K4qp1+WdooLw==:E034U68+xYq6U47e5i/isA==}*5-4}
+    """
+    print(RequestBodyDecodeAgent().run_agent(body))
+
+# 示例运行
+if __name__ == "__main__":
+    # testClass_PrivacyHandler()
+    # testAgent_ResultDecodeAgent()
+    # testAgent_RequestBodyDecodeAgent()
+    pass
