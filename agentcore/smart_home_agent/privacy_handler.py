@@ -233,6 +233,6 @@ def testAgent_RequestBodyDecodeAgent():
 # 示例运行
 if __name__ == "__main__":
     # testClass_PrivacyHandler()
-    # testAgent_ResultDecodeAgent()
+    testAgent_ResultDecodeAgent()
     # testAgent_RequestBodyDecodeAgent()
     pass
