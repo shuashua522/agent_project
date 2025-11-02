@@ -70,6 +70,32 @@ def get_llm():
             )
     return llm
 
+def get_local_llm():
+    model = "qwen2.5:0.5b"
+    api_key = "ollama"
+    base_url = "http://localhost:11434/v1"
+    llm = init_chat_model(
+        model=model,
+        model_provider="openai",
+        api_key=api_key,
+        base_url=base_url,
+        temperature=0,
+    )
+    return llm
+def extract_json_content(text):
+    """
+    提取文本中被 ```json ``` 包裹的内容
+    :param text: 原始文本
+    :return: 提取到的JSON内容列表（可能包含多个匹配结果）
+    """
+    # 正则表达式模式：匹配 ```json 开头，``` 结尾，中间捕获所有内容（包括换行）
+    # \s* 匹配标记前后的空白字符（空格、换行等）
+    # .*? 非贪婪匹配，避免跨多个 ```json 块匹配
+    # re.DOTALL 让 . 匹配换行符（支持多行内容）
+    pattern = r'```json\s*(.*?)\s*```'
+    matches = re.findall(pattern, text, re.DOTALL)
+    return matches
+
 def remove_thinks(text):
     # 匹配 <think> 和 </think> 之间的所有内容（包括标签）
     # .*? 表示非贪婪匹配，确保只匹配到最近的 </think>

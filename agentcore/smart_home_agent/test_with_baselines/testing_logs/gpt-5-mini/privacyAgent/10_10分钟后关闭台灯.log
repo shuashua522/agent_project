@@ -1,0 +1,91 @@
+2025-10-27 19:28:54,516 - INFO - [test_entry:process_testcases:122] - test-uniapi
+2025-10-27 19:28:54,523 - INFO - [base_agent:run_agent:84] - ================================ Human Message =================================
+
+10分钟后关闭台灯
+2025-10-27 19:29:00,165 - INFO - [base_agent:run_agent:84] - ================================== Ai Message ==================================
+Tool Calls:
+  persistentCommandTool (call_j9GpSPn8RQy7QjLl5DoCd8G1)
+ Call ID: call_j9GpSPn8RQy7QjLl5DoCd8G1
+  Args:
+    task: 在10分钟后关闭台灯
+2025-10-27 19:29:00,262 - INFO - [base_agent:run_agent:84] - ================================ Human Message =================================
+
+在10分钟后关闭台灯
+2025-10-27 19:29:08,955 - INFO - [base_agent:run_agent:84] - ================================== Ai Message ==================================
+Tool Calls:
+  generateTaskToQueueTool (call_Xf6skx8dOg6E0d90ZQhckZB3)
+ Call ID: call_Xf6skx8dOg6E0d90ZQhckZB3
+  Args:
+    task_desc: 10分钟后关闭台灯
+    action_statement: 当时间规则在10分钟后满足时，执行关闭台灯的操作（调用智能家居接口关闭台灯）
+    time_ruler: 在10分钟后执行一次
+2025-10-27 19:29:09,063 - INFO - [base_agent:run_agent:84] - ================================ Human Message =================================
+
+{"task_desc": "10分钟后关闭台灯", "action_statement": "当时间规则在10分钟后满足时，执行关闭台灯的操作（调用智能家居接口关闭台灯）", "time_ruler": "在10分钟后执行一次"}
+2025-10-27 19:29:29,715 - INFO - [base_agent:run_agent:84] - ================================== Ai Message ==================================
+Tool Calls:
+  add_conditional_task_to_queue (call_JzSqQlTMKiDQyVWoMZvQWLy9)
+ Call ID: call_JzSqQlTMKiDQyVWoMZvQWLy9
+  Args:
+    task_desc: 10分钟后关闭台灯
+    action_statement: 当时间规则在10分钟后满足时，执行关闭台灯的操作（调用智能家居接口关闭台灯）
+    condition_func_code: from datetime import datetime, timedelta
+# 在此模块级别计算目标触发时间（保证为添加任务时刻起10分钟后触发）
+target_time = datetime.now() + timedelta(minutes=10)
+
+def check_close_lamp():
+    """当当前时间达到或超过目标时间时返回True，触发关闭台灯任务"""
+    return datetime.now() >= target_time
+
+    condition_func_name: check_close_lamp
+2025-10-27 19:29:29,944 - INFO - [base_agent:run_agent:84] - ================================= Tool Message =================================
+Name: add_conditional_task_to_queue
+
+Error: 1 validation error for add_conditional_task_to_queue
+interval_setting
+  Field required [type=missing, input_value={'task_desc': '10分钟...me': 'check_close_lamp'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+ Please fix your mistakes.
+2025-10-27 19:29:36,087 - INFO - [base_agent:run_agent:84] - ================================== Ai Message ==================================
+Tool Calls:
+  add_conditional_task_to_queue (call_2v0Sj3P1r5ZiSHLMWn8vETt4)
+ Call ID: call_2v0Sj3P1r5ZiSHLMWn8vETt4
+  Args:
+    task_desc: 10分钟后关闭台灯
+    action_statement: 当时间规则在10分钟后满足时，执行关闭台灯的操作（调用智能家居接口关闭台灯）
+    condition_func_code: from datetime import datetime, timedelta
+# 在此模块级别计算目标触发时间（保证为添加任务时刻起10分钟后触发）
+target_time = datetime.now() + timedelta(minutes=10)
+
+def check_close_lamp():
+    """当当前时间达到或超过目标时间时返回True，触发关闭台灯任务"""
+    return datetime.now() >= target_time
+
+    condition_func_name: check_close_lamp
+    interval_setting: {'seconds': 30}
+2025-10-27 19:29:36,091 - INFO - [base_agent:run_agent:84] - ================================= Tool Message =================================
+Name: add_conditional_task_to_queue
+
+null
+2025-10-27 19:29:38,296 - INFO - [base_agent:run_agent:84] - ================================== Ai Message ==================================
+
+已帮你创建任务：10分钟后关闭台灯。任务已添加到队列，会在大约10分钟后触发并执行关闭台灯的操作（系统每30秒检查一次条件）。
+2025-10-27 19:29:38,297 - INFO - [base_agent:run_agent:84] - ================================= Tool Message =================================
+Name: generateTaskToQueueTool
+
+已帮你创建任务：10分钟后关闭台灯。任务已添加到队列，会在大约10分钟后触发并执行关闭台灯的操作（系统每30秒检查一次条件）。
+2025-10-27 19:29:40,008 - INFO - [base_agent:run_agent:84] - ================================== Ai Message ==================================
+
+好的，我已为你安排：将在大约10分钟后自动关闭台灯。任务已加入队列并会在后台执行。需要我现在取消这个任务或修改时间吗？
+2025-10-27 19:29:40,010 - INFO - [base_agent:run_agent:84] - ================================= Tool Message =================================
+Name: persistentCommandTool
+
+好的，我已为你安排：将在大约10分钟后自动关闭台灯。任务已加入队列并会在后台执行。需要我现在取消这个任务或修改时间吗？
+2025-10-27 19:29:46,350 - INFO - [base_agent:run_agent:84] - ================================== Ai Message ==================================
+
+已为你安排：将在大约10分钟后自动关闭台灯，任务已加入队列并会在后台执行。若需取消或修改时间，请发送“取消台灯定时”或“将关闭时间改为X分钟/具体时间”。
+2025-10-27 19:29:48,448 - INFO - [smart_home_agent_entry:privacy_home_agent:68] - 整理文本结果:
+好的，我已经为您安排了在大约10分钟后自动关闭台灯的任务。如果您需要取消或修改这个时间，请发送“取消台灯定时”或“将关闭时间改为X分钟/具体时间”。
+
+请注意，任务将在后台执行，并且您可以在后台查看其状态和进度。
+2025-10-27 19:29:48,448 - INFO - [test_entry:process_testcases:147] - {'累计输入 token': 9529, '累计输出 token': 3040, '累计总 token': 12569}

@@ -15,7 +15,8 @@ from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm
 from agent_project.agentcore.config.global_config import HOMEASSITANT_AUTHORIZATION_TOKEN, HOMEASSITANT_SERVER, \
     ACTIVE_PROJECT_ENV, PRIVACYHANDLER
-from agent_project.agentcore.smart_home_agent.privacy_handler import RequestBodyDecodeAgent
+from agent_project.agentcore.smart_home_agent.privacy_handler import RequestBodyDecodeAgent, replace_encoded_text, \
+    jsonBodyDecodeAndCalc
 
 """
     langgraph关于工具调用的官方文档：
@@ -142,7 +143,8 @@ def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状�
     Returns a state object for specified entity_id.
     Returns 404 if not found.
     """
-    entity_id=privacyHandler.decodeEntityId(entity_id)
+    # entity_id=privacyHandler.decodeEntityId(entity_id)
+    entity_id=replace_encoded_text(entity_id)
 
     result=None
     if active_project_env == "dev":
@@ -175,14 +177,16 @@ def execute_domain_service_by_entity_id(
     """
     Calls a service within a specific domain. Will return when the service has been executed.
 
-    Returns a list of states that have changed while the service was being executed, and optionally response data, if supported by the service.
-
-    由于智能家居的数据已经进行加密处理，如果你需要对传入body中的某些加密数据进行算术运算。你可以用{}把加密数据包裹起来，然后在其前后加入算术运算，例如：
-    {"entity_id": "nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6", "brightness_pct": {n+4XiEGjo3K4qp1+WdooLw==:E034U68+xYq6U47e5i/isA==}*5-4}
+    由于智能家居的数据已经进行加密处理(加密后的数据形如：@xxx@)，如果你需要对传入body中的某些加密数据进行算术运算。你可以用在其前后加入算术运算，例如：
+    {"entity_id": "@nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@", "brightness_pct": @n+4XiEGjo3K4qp1+WdooLw==:E034U68+xYq6U47e5i/isA==@*5-4}
 
     """
 
-    body=RequestBodyDecodeAgent().run_agent(body)
+    body=jsonBodyDecodeAndCalc(body)
+    import agent_project.agentcore.config.global_config as global_config
+    logger = global_config.GLOBAL_AGENT_DETAILED_LOGGER
+    if logger != None:
+        logger.info("\n请求的body:\n"+body)
     result=None
     if active_project_env == "dev":
         headers = {
@@ -208,7 +212,7 @@ def execute_domain_service_by_entity_id(
         # 返回JSON响应
         result= response.json()
 
-    return result
+    # return result
 
 def tools_test():
     # 正确调用无参数工具
@@ -239,6 +243,8 @@ class DeviceInteractionAgent(BaseToolAgent):
         llm = get_llm().bind_tools(self.get_tools())
         prompt = f"""
                     根据用户的指定，调用提供的工具来获取设备状态或者操作设备
+                    - 因为部分数据涉及隐私，所以你获取的数据可能已被加密，加密后的格式形如@xxx@，具体例子：@nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@
+                    - 如果你要使用这些加密数据，请保留完整格式
                     """
         system_message = {
             "role": "system",

@@ -22,9 +22,10 @@ llm_configparser = configparser.ConfigParser()
 llm_configparser.read(llm_config_file_path, encoding='utf-8')
 
 
-# 设置LangSmith跟踪开关和API密钥
+# 设置LangSmith跟踪开关和API密钥和标签
 os.environ["LANGSMITH_TRACING"] = llm_configparser.get('LangSmith', 'langsmith_tracing')
 os.environ["LANGSMITH_API_KEY"] = llm_configparser.get('LangSmith', 'langsmith_api_key')
+os.environ["LANGSMITH_PROJECT"] = "smartHomeAgent"
 
 PROVIDER = llm_configparser.get("base", 'selected_llm_provider')
 MODEL = llm_configparser.get(PROVIDER, 'model')

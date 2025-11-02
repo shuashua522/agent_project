@@ -9,6 +9,8 @@ from langgraph.prebuilt import ToolNode
 from langgraph.graph import StateGraph, MessagesState, START, END
 from abc import ABC, abstractmethod
 
+from agent_project.agentcore.commons.diy_ToolNode import SerialToolNode
+
 
 class BaseToolAgent(ABC):
     def __init__(self,logger=None):
@@ -41,7 +43,8 @@ class BaseToolAgent(ABC):
 
         tools=self.get_tools()
 
-        tool_node = ToolNode(tools)
+        tool_node = SerialToolNode(tools)
+
         builder.add_node("call_tools",self.call_tools)
         builder.add_node("tools", tool_node)
 
@@ -60,6 +63,14 @@ class BaseToolAgent(ABC):
         for step in agent.stream(
                 {"messages": [{"role": "user", "content": problem}]},
                 stream_mode="values",
+                config={
+                    "tags": ["02_try"],
+                    # "metadata": {
+                    #     "user_id": "user_123",
+                    #     "session_id": "session_456",
+                    #     "environment": "production"
+                    # }
+                },
         ):
             last_message = step["messages"][-1]  # 更新最后一个消息
             if not hasattr(self, 'logger') or self.logger is None:

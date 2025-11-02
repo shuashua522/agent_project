@@ -5,7 +5,7 @@ import traceback
 import requests
 
 from agent_project.agentcore.commons.utils import get_context_logger, TokenTrackingCallback
-from agent_project.agentcore.smart_home_agent.smart_home_agent_entry import SmartHomeAgent
+from agent_project.agentcore.smart_home_agent.smart_home_agent_entry import SmartHomeAgent, privacy_home_agent
 from agent_project.agentcore.smart_home_agent.test_with_baselines.baselines_homeassitant.sashaAgent import \
     run_sashaAgent
 from agent_project.agentcore.smart_home_agent.test_with_baselines.baselines_homeassitant.singleAgent import SingleAgent
@@ -94,7 +94,7 @@ def process_testcases(agent_name,dir_path=testing_logs_dir,):
     遍历测试用例
     agent_name取值：[singleAgent,sashaAgent,ourAgent]
     """
-    if agent_name not in ["singleAgent","sashaAgent","ourAgent"]:
+    if agent_name not in ["singleAgent","sashaAgent","ourAgent","privacyAgent"]:
         raise ValueError("无效的arg：agent_name")
 
     dir_path = os.path.join(testing_logs_dir, global_config.MODEL, agent_name)
@@ -104,8 +104,8 @@ def process_testcases(agent_name,dir_path=testing_logs_dir,):
 
     # 遍历测试用例
     for index, question in enumerate(testcases):
-        # if(index+1)>=8:
-        #     continue
+        if(index+1)<=8:
+            continue
         init_test_global_config()
         init_devices_states()
         # 处理文件名：移除特殊字符，确保文件名合法
@@ -125,8 +125,9 @@ def process_testcases(agent_name,dir_path=testing_logs_dir,):
                 SingleAgent(logger=logger).run_agent(question)
             elif agent_name=="sashaAgent":
                 run_sashaAgent(question)
-            elif agent_name=="ourAgent":
-                SmartHomeAgent().run_agent(question)
+            elif agent_name=="ourAgent" or agent_name=="privacyAgent":
+                # SmartHomeAgent().run_agent(question)
+                privacy_home_agent(question)
         except Exception as e:
             # 1. 获取完整的异常信息（类型、消息、堆栈跟踪）
             # traceback.format_exc() 会返回包含堆栈的字符串，便于调试
@@ -150,5 +151,5 @@ def main(agent_name):
 
 
 if __name__=="__main__":
-    # main("ourAgent")
+    main("privacyAgent")
     pass
