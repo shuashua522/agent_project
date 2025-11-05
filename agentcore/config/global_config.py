@@ -25,7 +25,8 @@ llm_configparser.read(llm_config_file_path, encoding='utf-8')
 # 设置LangSmith跟踪开关和API密钥和标签
 os.environ["LANGSMITH_TRACING"] = llm_configparser.get('LangSmith', 'langsmith_tracing')
 os.environ["LANGSMITH_API_KEY"] = llm_configparser.get('LangSmith', 'langsmith_api_key')
-os.environ["LANGSMITH_PROJECT"] = "smartHomeAgent"
+# os.environ["LANGSMITH_PROJECT"] = "smartHomeAgent"
+LANGSMITH_TAG_NAME="test_before"
 
 PROVIDER = llm_configparser.get("base", 'selected_llm_provider')
 MODEL = llm_configparser.get(PROVIDER, 'model')
@@ -109,7 +110,7 @@ HOMEASSITANT_SERVER = "62.234.0.27:8123"
 
 #===================================== 环境：test、dev、pro
 ACTIVE_PROJECT_ENV="dev"
-
+ENABLE_MEMORY_FOR_TEST=False
 # ================================== 隐私处理
 def get_privacy_handler():
     # 延迟导入，避免模块加载时触发循环

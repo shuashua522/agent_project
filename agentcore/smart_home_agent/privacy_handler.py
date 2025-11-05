@@ -49,7 +49,7 @@ class PrivacyHandler:
 
     def encodeEntity(self, entity: dict):
         copied_entity = copy.deepcopy(entity)
-        encode_key = {'context', 'entity_id', 'last_changed', 'last_updated', 'state', 'last_reported'}
+        encode_key = {'context', 'entity_id', 'last_changed', 'last_updated', 'state', 'last_reported','attributes'}
         for key in copied_entity:
             # 若key在需加密的集合中，且对应值存在（非None）
             if key in encode_key and copied_entity[key] is not None:
@@ -58,6 +58,10 @@ class PrivacyHandler:
                         copied_entity[key][val] = add_sign(self.encode(str(copied_entity[key][val])))
                 elif (key == "entity_id"):
                     copied_entity[key] = self.encodeEntityId(copied_entity[key])
+                elif (key == "attributes"):
+                    for val in ["volume_level","brightness","color_temp_kelvin"]:
+                        if val in copied_entity[key]:
+                            copied_entity[key][val] = add_sign(self.encode(str(copied_entity[key][val])))
                 # elif(key=="state"):
                 #     encode_val=self.encode(str(copied_entity[key]))
                 #     state_brief_description=self.generate_state_brief_description(entity)
@@ -78,6 +82,10 @@ class PrivacyHandler:
                         copied_entity[key][val] = self.decode(str(copied_entity[key][val]))
                 elif (key == "entity_id"):
                     copied_entity[key] = self.decodeEntityId(copied_entity[key])
+                elif (key == "attributes"):
+                    for val in ["volume_level", "brightness", "color_temp_kelvin"]:
+                        if val in copied_entity[key]:
+                            copied_entity[key] = self.decodeEntityId(copied_entity[key])
                 # elif (key == "state"):
                 #     encode_str=copied_entity[key]
                 #     encode_val=encode_str[:encode_str.find('(')]
@@ -244,7 +252,11 @@ def testClass_PrivacyHandler():
 		"entity_id": "sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5",
 		"state": "",
 		"attributes": {
-			"friendly_name": "小米智能多模网关2  网关 网络变化状态string_fmt:{access-mode:{last:0,now:1],ip:{last:xx,now:xx},wifi-ssid:{last:xx,now:xx},time:12345678}}}"
+			"friendly_name": "小米智能多模网关2  网关 网络变化状态string_fmt:{access-mode:{last:0,now:1],ip:{last:xx,now:xx},wifi-ssid:{last:xx,now:xx},time:12345678}}}",
+            "brightness": 51,
+            "volume_level":0.2,
+            "color_temp_kelvin":4000
+
 		},
 		"last_changed": "2025-10-09T02:17:40.351775+00:00",
 		"last_reported": "2025-10-09T02:17:40.351775+00:00",
@@ -294,6 +306,6 @@ if __name__ == "__main__":
     # testAgent_ResultDecodeAgent()
     # testAgent_RequestBodyDecodeAgent()
     # print(replace_encoded_text("@OyXDhf1ROvIaW6/pBBquzA==:/Y7+KAElT9ySDIUHaHIOSrK7o+EhqHbUpkV3S+aceYs=@"))
-    jsonBodyDecodeAndCalc('{"entity_id":"switch.@LfQOYZbHqKeNcVrw6u1FZw==:BzzlkkHWE02WNDNfJM0MBg3QO4QHKTDmUMk7LH+TZGY=@"}')
+    jsonBodyDecodeAndCalc('{"entity_id":"media_player.@46VJUDVkHI4qVL1fALuGZw==:gFAh97wu0/MTHeA02bP2pSIS8KH7y1uoQoxF1x80bFg=@","volume_level": @nTiOixk3B550C99ZsaM3+/w==:BSvACTaykbxUtMAw/31zQw==@-0.02}')
     pass
 

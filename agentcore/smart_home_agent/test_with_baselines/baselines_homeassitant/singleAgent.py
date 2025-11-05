@@ -4,8 +4,10 @@ from langgraph.graph import MessagesState
 
 from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm
-from agent_project.agentcore.smart_home_agent.device_interaction_agent import get_all_entity_id, get_services_by_domain, \
-    get_states_by_entity_id, execute_domain_service_by_entity_id
+from agent_project.agentcore.smart_home_agent.test_with_baselines.baselines_homeassitant.sage.smart.persistent import \
+    ConditionCheckerTool, NotifyOnConditionTool
+from agent_project.agentcore.smart_home_agent.test_with_baselines.baselines_homeassitant.sage.smart.smartThings import \
+    get_all_entity_id,get_services_by_domain,get_states_by_entity_id,execute_domain_service_by_entity_id
 
 
 class SingleAgent(BaseToolAgent):
@@ -17,7 +19,10 @@ class SingleAgent(BaseToolAgent):
         tools = [get_all_entity_id,
                  get_services_by_domain,
                  get_states_by_entity_id,
-                 execute_domain_service_by_entity_id]
+                 execute_domain_service_by_entity_id,
+                 ConditionCheckerTool,
+                 NotifyOnConditionTool
+                 ]
         return tools
 
     def call_tools(self, state: MessagesState):

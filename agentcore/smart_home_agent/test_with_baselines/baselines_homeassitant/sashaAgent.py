@@ -21,8 +21,11 @@ import agent_project.agentcore.config.global_config as global_config
 
 import re
 from pathlib import Path
-from agent_project.agentcore.smart_home_agent.device_interaction_agent import get_all_entity_id, get_services_by_domain, \
-    get_states_by_entity_id, execute_domain_service_by_entity_id
+from agent_project.agentcore.smart_home_agent.test_with_baselines.baselines_homeassitant.sage.smart.persistent import \
+    ConditionCheckerTool, NotifyOnConditionTool
+from agent_project.agentcore.smart_home_agent.test_with_baselines.baselines_homeassitant.sage.smart.smartThings import \
+    get_all_entity_id,get_services_by_domain,get_states_by_entity_id,execute_domain_service_by_entity_id
+
 
 def get_logger():
     logger=global_config.GLOBAL_AGENT_DETAILED_LOGGER
@@ -228,7 +231,8 @@ class persistent(BaseToolAgent):
 
     def get_tools(self) -> List[Callable]:
         tools = [
-                 get_states_by_entity_id,
+                ConditionCheckerTool,
+                NotifyOnConditionTool
                  ]
         return tools
 
@@ -299,4 +303,4 @@ def run_sashaAgent(command:str):
         return {"output": clarification_answer.explanation}
 
 if __name__ == "__main__":
-    run_sashaAgent("当前光照强度")
+    run_sashaAgent("每当网关可用，打开插座")

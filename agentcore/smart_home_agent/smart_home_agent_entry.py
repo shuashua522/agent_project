@@ -6,6 +6,7 @@ from langgraph.graph import MessagesState
 from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm, get_local_llm
 from agent_project.agentcore.smart_home_agent.device_interaction_agent import deviceInteractionTool
+from agent_project.agentcore.smart_home_agent.memory_preference_agent import memory_tool
 from agent_project.agentcore.smart_home_agent.persistent_command_agent import persistentCommandTool
 from agent_project.agentcore.smart_home_agent.privacy_handler import ResultDecodeAgent, replace_encoded_text
 
@@ -13,6 +14,7 @@ from agent_project.agentcore.smart_home_agent.privacy_handler import ResultDecod
 class SmartHomeAgent(BaseToolAgent):
     def get_tools(self) -> List[Callable]:
         tools=[deviceInteractionTool,
+               memory_tool,
                persistentCommandTool]
         return tools
 
@@ -54,9 +56,9 @@ def smart_home_agent_tool(problem:str):
 def privacy_home_agent(problem:str):
     encode_str = SmartHomeAgent().run_agent(problem)
     decode_str = replace_encoded_text(encode_str)
-    system_prompt = f"""整理下面文本，使其更易于给用户观看
-            用户的提问：{problem}
-            处理结果：{decode_str}"""
+    system_prompt = f"""根据参考信息，回答用户问题
+            【问题】：{problem}
+            【参考信息】：{decode_str}"""
     system_message = {
         "role": "system",
         "content": system_prompt,

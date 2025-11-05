@@ -60,11 +60,12 @@ class BaseToolAgent(ABC):
         agent=self.create_agent()
         last_message = None  # 初始化最后一个消息变量
 
+        import agent_project.agentcore.config.global_config as global_config
         for step in agent.stream(
                 {"messages": [{"role": "user", "content": problem}]},
                 stream_mode="values",
                 config={
-                    "tags": ["02_try"],
+                    "tags": [global_config.LANGSMITH_TAG_NAME],
                     # "metadata": {
                     #     "user_id": "user_123",
                     #     "session_id": "session_456",

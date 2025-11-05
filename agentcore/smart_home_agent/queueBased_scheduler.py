@@ -19,6 +19,9 @@ from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm
 from typing import Optional
 
+from agent_project.agentcore.smart_home_agent.test_with_baselines.baselines_homeassitant.sage.smart.smartThings import \
+    get_states_by_entity_id, get_all_entity_id
+
 ################################################
 # 模拟数据的文件所在目录
 mock_data_dir = os.path.join(
@@ -61,50 +64,7 @@ def extract_entity_by_id(json_file_path: str, target_entity_id: str) -> Optional
                 target_entity = entity
                 break
     return target_entity
-def get_all_entity_id()-> Union[Dict, List]:
-    """
-    Returns an array of state objects.
-    Each state has the following attributes: entity_id, state, last_changed and attributes.
-    """
-    # headers = {
-    #     "Authorization": f"Bearer {token}",
-    #     "Content-Type": "application/json"
-    # }
-    #
-    # url = "http://localhost:8123/api/states"
-    #
-    # # 发送GET请求
-    # response = requests.get(url, headers=headers)
-    # # 检查请求是否成功
-    # response.raise_for_status()
-    # # 返回JSON响应内容
-    # return response.json()
-    file_path=os.path.join(mock_data_dir, 'selected_entities.json')
-    with open(file_path, 'r', encoding='utf-8') as f:
-        # 解析JSON文件并返回Python对象
-        return json.load(f)
-def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状态"],) -> Union[Dict, List]:
-    """
-    Returns a state object for specified entity_id.
-    Returns 404 if not found.
-    """
-    file_path = os.path.join(mock_data_dir, 'selected_entities.json')
-    return extract_entity_by_id(file_path,entity_id)
 
-    # headers = {
-    #     "Authorization": f"Bearer {token}",
-    #     "Content-Type": "application/json"
-    # }
-    #
-    # url = f"http://localhost:8123/api/states/{entity_id}"
-    #
-    # # 发送GET请求
-    # response = requests.get(url, headers=headers)
-    # # 检查请求是否成功
-    # response.raise_for_status()
-    # # 返回JSON响应内容
-    # return response.json()
-################################################
 
 
 class QueueBasedScheduler:

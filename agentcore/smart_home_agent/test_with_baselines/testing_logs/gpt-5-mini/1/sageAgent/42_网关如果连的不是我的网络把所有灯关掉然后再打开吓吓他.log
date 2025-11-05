@@ -1,0 +1,515 @@
+2025-11-05 10:31:11,712 - INFO - [base_agent:run_agent:93] - ================================ Human Message =================================
+
+网关如果连的不是我的网络，把所有灯关掉，然后再打开，吓吓他
+2025-11-05 10:31:26,691 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  ConditionCheckerTool (call_4mU2rY6W4PfPzwrmYjBUGiMV)
+ Call ID: call_4mU2rY6W4PfPzwrmYjBUGiMV
+  Args:
+    text: Is the home's gateway device connected to a network other than the configured home Wi‑Fi? (Check the gateway's current connected SSID against the configured home SSID stored in the smart home system. Context: if gateway is on a different network, user wants all lights toggled off then on.)
+2025-11-05 10:31:26,698 - INFO - [base_agent:run_agent:93] - ================================ Human Message =================================
+
+
+    Condition to check: Is the home's gateway device connected to a network other than the configured home Wi‑Fi? (Check the gateway's current connected SSID against the configured home SSID stored in the smart home system. Context: if gateway is on a different network, user wants all lights toggled off then on.)
+    Thought: I should generate a plan to help with checking this condition.
+    
+2025-11-05 10:31:35,637 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  SmartThingsPlannerTool (call_AX62qFElC1WDn5MzhfhENOTF)
+ Call ID: call_AX62qFElC1WDn5MzhfhENOTF
+  Args:
+    task: Condition to check: Is the home's gateway device connected to a network other than the configured home Wi‑Fi? (Check the gateway's current connected SSID against the configured home SSID stored in the smart home system. Context: if gateway is on a different network, user wants all lights toggled off then on.)
+Plan: 1) List all entity IDs to find the gateway device and the stored configured home SSID. 2) Get states for the gateway's current SSID entity. 3) Get states for the configured home SSID entity. 4) Write Python function that returns True if gateway is on different SSID, False otherwise. The function will use get_states_by_entity_id. Provide docs for each API call and final code.
+Please produce a step-by-step plan and confirm the entities to query.
+2025-11-05 10:32:35,066 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: SmartThingsPlannerTool
+
+Device Ids:
+- sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3 (小米智能多模网关2  网关 WiFi网络名称(写权限无效))
+  - capability id: sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3 (sensor)
+- sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5 (小米智能多模网关2  网关 网络变化状态 string_fmt:{access-mode:{last:0,now:1],ip:{last:xx,now:xx},wifi-ssid:{last:xx,now:xx},time:12345678}})
+  - capability id: sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5 (sensor)
+- (optional) sensor.lumi_cn_551385025_mcn001_access_mode_p_2_1 (小米智能多模网关2  网关 接入方式) — alternative source for network info
+  - capability id: sensor.lumi_cn_551385025_mcn001_access_mode_p_2_1 (sensor)
+
+Lights to toggle (targets if gateway is on a different SSID):
+- light.philips_cn_1061200910_lite_s_2 (米家智能台灯Lite)
+  - capability id: light.philips_cn_1061200910_lite_s_2 (light)
+- light.yeelink_cn_1162511951_mbulb3_s_2 (灯泡)
+  - capability id: light.yeelink_cn_1162511951_mbulb3_s_2 (light)
+
+Capabilities (summary of relevant capability ids):
+- sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3 (sensor)
+- sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5 (sensor)
+- sensor.lumi_cn_551385025_mcn001_access_mode_p_2_1 (sensor) — optional
+- light.philips_cn_1061200910_lite_s_2 (light)
+- light.yeelink_cn_1162511951_mbulb3_s_2 (light)
+
+Plan (step-by-step):
+1) Discover and confirm entities to query:
+   - Confirm the gateway's current connected SSID using sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3.
+   - Also read sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5 because it contains a history/last/now structure including wifi-ssid which can hold the configured/home SSID or previous value; use this as a fallback or to extract the configured SSID if your system saved it there.
+   - If you have a separate entity in your Home Assistant that stores the "configured home SSID" (an input_text / sensor you created), include that entity_id. (Not present in the provided entity list — see Explanation below.)
+
+2) Read the states:
+   - Call get_states_by_entity_id('sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3') to get the gateway's current SSID (primary source).
+   - Call get_states_by_entity_id('sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5') to get the access-mode struct that may contain wifi-ssid.last and wifi-ssid.now (fallback/alternative).
+   - If you have a stored configured/home SSID entity, call get_states_by_entity_id(<configured_ssid_entity_id>) as well.
+
+3) Compute the comparison:
+   - Use a Python function (example below) that:
+     a) obtains the gateway current SSID from the wifi_ssid sensor state.
+     b) obtains the configured/home SSID either from a provided expected-SSID entity, or from parsing access_mode sensor (wifi-ssid.last or a known attribute).
+     c) normalizes both strings (strip whitespace, lower-case) and compares equality.
+     d) returns True if gateway SSID != configured SSID (i.e., gateway is on a different network), False otherwise.
+
+4) If the function returns True (gateway on different SSID), toggle lights:
+   - Call service light.turn_off with entity_ids = [light.philips_cn_1061200910_lite_s_2, light.yeelink_cn_1162511951_mbulb3_s_2].
+   - Wait a small delay (e.g., 1–2 seconds).
+   - Call service light.turn_on with the same entity_ids.
+   - (Optional) If you want to preserve previous states/brightness/colors, read each light state before turning off and restore those attributes when turning on.
+
+5) Report outcome (True/False) and any parsing / missing-entity warnings.
+
+Example Python function and API usage (pseudo-code using the assumed helper get_states_by_entity_id and call_service):
+- API / helper docs (brief):
+  - get_states_by_entity_id(entity_id)
+    - Input: entity_id (string)
+    - Returns: an object with .state (string) and .attributes (dict). Example: state_obj.state == "MyWiFi" or state_obj.state == '{"access-mode":...}' depending on sensor.
+  - call_service(domain, service, data)
+    - Input: domain (e.g., "light"), service (e.g., "turn_off"), data (dict, e.g., {"entity_id": ["light.a", "light.b"]})
+    - Effect: executes the service in Home Assistant.
+
+- Python function (example):
+  (This is plain Python-style pseudocode — adapt to your automation environment.)
+  def is_gateway_on_different_ssid(get_states_by_entity_id, configured_ssid_entity_id=None):
+      """
+      Returns (bool, details) where bool is True if gateway is on a different SSID than the configured SSID.
+      - get_states_by_entity_id: callable that returns a state_obj with .state and .attributes
+      - configured_ssid_entity_id: optional entity_id to read the expected home SSID from (if available)
+      """
+      import json, re
+
+      gw_ssid_ent = 'sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3'
+      access_mode_ent = 'sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5'
+
+      # 1) get current SSID from primary sensor
+      gw_state = get_states_by_entity_id(gw_ssid_ent)
+      current_ssid = None
+      if gw_state is not None:
+          current_ssid = (gw_state.state or '').strip()
+      # 2) determine configured/home SSID:
+      expected_ssid = None
+      # a) explicit configured SSID entity provided
+      if configured_ssid_entity_id:
+          cfg_state = get_states_by_entity_id(configured_ssid_entity_id)
+          if cfg_state is not None:
+              expected_ssid = (cfg_state.state or '').strip()
+      # b) fallback: try parsing access-mode sensor for wifi-ssid.last or wifi-ssid.now
+      if not expected_ssid:
+          access_state = get_states_by_entity_id(access_mode_ent)
+          if access_state is not None:
+              # try JSON parse first
+              try:
+                  # sometimes the state or an attribute holds JSON; try both
+                  candidate = access_state.state
+                  parsed = None
+                  try:
+                      parsed = json.loads(candidate)
+                  except Exception:
+                      # try attributes
+                      for v in access_state.attributes.values():
+                          if isinstance(v, str):
+                              try:
+                                  parsed = json.loads(v)
+                                  break
+                              except Exception:
+                                  pass
+                  if parsed and isinstance(parsed, dict):
+                      # try to find wifi-ssid -> {last:..., now:...}
+                      wifi = parsed.get('wifi-ssid') or parsed.get('wifi_ssid') or parsed.get('wifi')
+                      if isinstance(wifi, dict):
+                          expected_ssid = (wifi.get('last') or wifi.get('now') or '').strip()
+              except Exception:
+                  pass
+              # Last resort: regex search for wifi-ssid:{last:XX,now:YY}
+              if not expected_ssid:
+                  text = (access_state.state or '') + ' ' + ' '.join(
+                      [str(v) for v in access_state.attributes.values() if isinstance(v, (str,))])
+                  m = re.search(r"wifi-ssid:\{[^}]*last:([^,}]+)", text)
+                  if m:
+                      expected_ssid = m.group(1).strip()
+      # 3) If still missing expected or current SSID, return with a warning
+      if not current_ssid:
+          return (False, {'error': 'current_ssid_missing', 'details': 'Could not read gateway current SSID from {}'.format(gw_ssid_ent)})
+      if not expected_ssid:
+          return (False, {'error': 'configured_ssid_missing', 'details': 'No configured/home SSID entity provided and none parsed from {}'.format(access_mode_ent)})
+      # 4) normalize and compare
+      if current_ssid.lower().strip() != expected_ssid.lower().strip():
+          return (True, {'current_ssid': current_ssid, 'expected_ssid': expected_ssid})
+      else:
+          return (False, {'current_ssid': current_ssid, 'expected_ssid': expected_ssid})
+
+- Example toggling lights if different:
+  if different, call:
+    call_service('light', 'turn_off', {'entity_id': ['light.philips_cn_1061200910_lite_s_2', 'light.yeelink_cn_1162511951_mbulb3_s_2']})
+    # sleep 1–2 seconds
+    call_service('light', 'turn_on', {'entity_id': ['light.philips_cn_1061200910_lite_s_2', 'light.yeelink_cn_1162511951_mbulb3_s_2']})
+
+Explanation and notes:
+- Primary current-SSID source: sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3. Use that first.
+- The provided entity list does NOT include a distinct "configured home SSID" input_text or sensor. If you already have such an entity in your HA instance, pass its entity_id as configured_ssid_entity_id into the function above. If you do not have one, you have two choices:
+  1) Store your expected home SSID in a dedicated HA helper (input_text or an input_text-like sensor) and then the function can read it directly (recommended for reliability).
+  2) Try to parse the configured/previous SSID out of sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5. That sensor contains a last/now structure including wifi-ssid and can sometimes be used to extract the configured SSID — but parsing may be fragile because its content/format can differ.
+- Always normalize SSID strings before comparing (trim and case-insensitive compare).
+- The plan lists all candidate capabilities that might hold the information; use both sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3 and sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5 to be robust.
+- Lights toggling uses light.turn_off / light.turn_on on the listed light entity_ids. If you want to preserve original on/off/brightness states for each light, read each light state beforehand and restore attributes when turning on.
+
+Next steps I can help with:
+- Provide exact code adapted to your automation runtime (AppDaemon, Home Assistant Python Scripts, or Node-RED) if you tell me which API (get_states_by_entity_id / call_service) you have available.
+- Create an input_text (configured SSID) entity and sample automation that runs this check and toggles lights automatically.
+<FINISHED>
+2025-11-05 10:32:40,287 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  get_all_entity_id (call_j1TKTvRZiQYFpGV8hP6j2THg)
+ Call ID: call_j1TKTvRZiQYFpGV8hP6j2THg
+  Args:
+2025-11-05 10:32:40,339 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: get_all_entity_id
+
+[{"entity_id": "conversation.home_assistant", "state": "unknown", "attributes": {"friendly_name": "Home Assistant", "supported_features": 1}, "last_changed": "2025-10-19T08:31:07.178209+00:00", "last_reported": "2025-10-19T08:31:07.178209+00:00", "last_updated": "2025-10-19T08:31:07.178209+00:00", "context": {"id": "01K7XSG0DAD8MDEAGXM77MACJ5", "parent_id": null, "user_id": null}}, {"entity_id": "event.backup_automatic_backup", "state": "unknown", "attributes": {"event_types": ["completed", "failed", "in_progress"], "event_type": null, "friendly_name": "Backup 自动备份"}, "last_changed": "2025-10-19T08:31:07.193544+00:00", "last_reported": "2025-10-19T08:31:07.193544+00:00", "last_updated": "2025-10-19T08:31:07.193544+00:00", "context": {"id": "01K7XSG0DS28HF61Z2SV2YJYM3", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.backup_backup_manager_state", "state": "idle", "attributes": {"options": ["idle", "create_backup", "blocked", "receive_backup", "restore_backup"], "device_class": "enum", "friendly_name": "Backup 备份管理器状态"}, "last_changed": "2025-10-19T08:31:08.770741+00:00", "last_reported": "2025-10-19T08:31:08.770741+00:00", "last_updated": "2025-10-19T08:31:08.770741+00:00", "context": {"id": "01K7XSG1Z2FA27VFQMS2JYGQ7C", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.backup_next_scheduled_automatic_backup", "state": "unknown", "attributes": {"device_class": "timestamp", "friendly_name": "Backup 下一次计划的自动备份"}, "last_changed": "2025-10-19T08:31:07.194556+00:00", "last_reported": "2025-10-19T08:31:08.770789+00:00", "last_updated": "2025-10-19T08:31:07.194556+00:00", "context": {"id": "01K7XSG0DTDHYSVHFSEEW9WJBK", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.backup_last_successful_automatic_backup", "state": "unknown", "attributes": {"device_class": "timestamp", "friendly_name": "Backup 上次成功的自动备份"}, "last_changed": "2025-10-19T08:31:07.194732+00:00", "last_reported": "2025-10-19T08:31:08.770807+00:00", "last_updated": "2025-10-19T08:31:07.194732+00:00", "context": {"id": "01K7XSG0DT52F1EE33APY0Y5FT", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.backup_last_attempted_automatic_backup", "state": "unknown", "attributes": {"device_class": "timestamp", "friendly_name": "Backup 上次尝试自动备份"}, "last_changed": "2025-10-19T08:31:07.194893+00:00", "last_reported": "2025-10-19T08:31:08.770821+00:00", "last_updated": "2025-10-19T08:31:07.194893+00:00", "context": {"id": "01K7XSG0DTNPH87WHYSGXSQBMX", "parent_id": null, "user_id": null}}, {"entity_id": "zone.home", "state": "0", "attributes": {"latitude": 39.9075, "longitude": 116.39723, "radius": 100, "passive": false, "persons": [], "editable": true, "icon": "mdi:home", "friendly_name": "我的家"}, "last_changed": "2025-10-19T08:31:07.394218+00:00", "last_reported": "2025-10-19T08:31:07.394218+00:00", "last_updated": "2025-10-19T08:31:07.394218+00:00", "context": {"id": "01K7XSG0M2757JVP027S9FAJ50", "parent_id": null, "user_id": null}}, {"entity_id": "person.shua", "state": "unknown", "attributes": {"editable": true, "id": "shua", "device_trackers": [], "user_id": "b1194095a8dd412f9fd16b8ae0689951", "friendly_name": "shua"}, "last_changed": "2025-10-19T08:31:07.402617+00:00", "last_reported": "2025-10-19T08:31:08.769310+00:00", "last_updated": "2025-10-19T08:31:08.769310+00:00", "context": {"id": "01K7XSG1Z1W0N5FQ9HVBG2K2TJ", "parent_id": null, "user_id": null}}, {"entity_id": "sun.sun", "state": "above_horizon", "attributes": {"next_dawn": "2025-11-05T22:20:04.550054+00:00", "next_dusk": "2025-11-05T09:36:24.573403+00:00", "next_midnight": "2025-11-05T15:58:00+00:00", "next_noon": "2025-11-05T03:57:56+00:00", "next_rising": "2025-11-05T22:48:59.288996+00:00", "next_setting": "2025-11-05T09:07:35.060016+00:00", "elevation": 30.71, "azimuth": 155.09, "rising": true, "friendly_name": "Sun"}, "last_changed": "2025-11-04T22:46:59.771722+00:00", "last_reported": "2025-11-05T02:32:33.138795+00:00", "last_updated": "2025-11-05T02:29:32.702620+00:00", "context": {"id": "01K98XJ5CYWH33EBAHCN9NKYFY", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.sun_next_dawn", "state": "2025-11-05T22:20:04+00:00", "attributes": {"device_class": "timestamp", "friendly_name": "Sun 下个清晨"}, "last_changed": "2025-11-04T22:18:59.753052+00:00", "last_reported": "2025-11-04T23:49:32.659557+00:00", "last_updated": "2025-11-04T22:18:59.753052+00:00", "context": {"id": "01K98F7CS99STCTDXQHVT8JT7K", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.sun_next_dusk", "state": "2025-11-05T09:36:24+00:00", "attributes": {"device_class": "timestamp", "friendly_name": "Sun 下个黄昏"}, "last_changed": "2025-11-04T09:37:26.212204+00:00", "last_reported": "2025-11-04T09:37:26.212204+00:00", "last_updated": "2025-11-04T09:37:26.212204+00:00", "context": {"id": "01K973MY64B6B3P20YX6787M9E", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.sun_next_midnight", "state": "2025-11-05T15:58:00+00:00", "attributes": {"device_class": "timestamp", "friendly_name": "Sun 下个午夜"}, "last_changed": "2025-11-04T15:57:57.001602+00:00", "last_reported": "2025-11-04T23:49:32.659638+00:00", "last_updated": "2025-11-04T15:57:57.001602+00:00", "context": {"id": "01K97SDNW9KEJ2ZE9NB2B1TT00", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.sun_next_noon", "state": "2025-11-05T03:57:56+00:00", "attributes": {"device_class": "timestamp", "friendly_name": "Sun 下个正午"}, "last_changed": "2025-11-04T03:57:55.005574+00:00", "last_reported": "2025-11-04T03:57:55.005574+00:00", "last_updated": "2025-11-04T03:57:55.005574+00:00", "context": {"id": "01K96G78DX1XTSH92CFQ93MP3B", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.sun_next_rising", "state": "2025-11-05T22:48:59+00:00", "attributes": {"device_class": "timestamp", "friendly_name": "Sun 下次日出"}, "last_changed": "2025-11-04T22:47:50.600845+00:00", "last_reported": "2025-11-04T23:49:32.659697+00:00", "last_updated": "2025-11-04T22:47:50.600845+00:00", "context": {"id": "01K98GW728899BDSRX9ER3BNRC", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.sun_next_setting", "state": "2025-11-05T09:07:35+00:00", "attributes": {"device_class": "timestamp", "friendly_name": "Sun 下次日落"}, "last_changed": "2025-11-04T09:08:40.582057+00:00", "last_reported": "2025-11-04T09:08:40.582057+00:00", "last_updated": "2025-11-04T09:08:40.582057+00:00", "context": {"id": "01K9720906DEHTFAGGJMT3ZA45", "parent_id": null, "user_id": null}}, {"entity_id": "tts.google_translate_en_com", "state": "unknown", "attributes": {"friendly_name": "Google Translate en com"}, "last_changed": "2025-10-19T08:31:07.684001+00:00", "last_reported": "2025-10-19T08:31:07.684001+00:00", "last_updated": "2025-10-19T08:31:07.684001+00:00", "context": {"id": "01K7XSG0X415ZP01SYG69EB1SK", "parent_id": null, "user_id": null}}, {"entity_id": "todo.shopping_list", "state": "0", "attributes": {"friendly_name": "购物清单", "supported_features": 15}, "last_changed": "2025-10-19T08:31:07.871302+00:00", "last_reported": "2025-10-19T08:31:07.871302+00:00", "last_updated": "2025-10-19T08:31:07.871302+00:00", "context": {"id": "01K7XSG12Z0CC215DWE8NDRTM0", "parent_id": null, "user_id": null}}, {"entity_id": "weather.forecast_wo_de_jia", "state": "partlycloudy", "attributes": {"temperature": 49, "dew_point": 43, "temperature_unit": "°F", "humidity": 80, "cloud_coverage": 28.9, "uv_index": 1.1, "pressure": 30.21, "pressure_unit": "inHg", "wind_bearing": 9.5, "wind_speed": 2.92, "wind_speed_unit": "mph", "visibility_unit": "mi", "precipitation_unit": "in", "attribution": "Weather forecast from met.no, delivered by the Norwegian Meteorological Institute.", "friendly_name": "Forecast 我的家", "supported_features": 3}, "last_changed": "2025-11-05T02:26:34.937195+00:00", "last_reported": "2025-11-05T02:26:34.937195+00:00", "last_updated": "2025-11-05T02:26:34.937195+00:00", "context": {"id": "01K98XCQSSV47PDH5W81DWC5DX", "parent_id": null, "user_id": null}}, {"entity_id": "update.hacs_update", "state": "off", "attributes": {"auto_update": false, "display_precision": 0, "installed_version": "2.0.5", "in_progress": false, "latest_version": "2.0.5", "release_summary": null, "release_url": "https://github.com/hacs/integration/releases/2.0.5", "skipped_version": null, "title": null, "update_percentage": null, "entity_picture": "https://brands.home-assistant.io/_/hacs/icon.png", "friendly_name": "HACS update", "supported_features": 23}, "last_changed": "2025-10-19T08:35:43.152064+00:00", "last_reported": "2025-10-19T08:35:43.152064+00:00", "last_updated": "2025-10-19T08:35:43.152064+00:00", "context": {"id": "01K7XSRDXGR78S0C6VV6WKZKE8", "parent_id": null, "user_id": null}}, {"entity_id": "update.xiaomi_home_update", "state": "off", "attributes": {"auto_update": false, "display_precision": 0, "installed_version": "v0.4.3", "in_progress": false, "latest_version": "v0.4.3", "release_summary": "<ha-alert alert-type='error'>Restart of Home Assistant required</ha-alert>", "release_url": "https://github.com/XiaoMi/ha_xiaomi_home/releases/v0.4.3", "skipped_version": null, "title": null, "update_percentage": null, "entity_picture": "https://brands.home-assistant.io/_/xiaomi_home/icon.png", "friendly_name": "Xiaomi Home update", "supported_features": 23}, "last_changed": "2025-10-19T08:35:43.152578+00:00", "last_reported": "2025-10-19T08:35:43.152708+00:00", "last_updated": "2025-10-19T08:35:43.152578+00:00", "context": {"id": "01K7XSRDXG7M91B50BJEX353BN", "parent_id": null, "user_id": null}}, {"entity_id": "binary_sensor.isa_cn_blt_3_1md0u6qht0k00_dw2hl_contact_state_p_2_2", "state": "off", "attributes": {"device_class": "door", "friendly_name": "客厅窗户的门窗传感器  门窗传感器 接触状态"}, "last_changed": "2025-11-04T10:37:23.914815+00:00", "last_reported": "2025-11-04T10:37:23.914815+00:00", "last_updated": "2025-11-04T10:37:23.914815+00:00", "context": {"id": "01K9772QJAVZ7HAS2VRPPTK9ZR", "parent_id": null, "user_id": null}}, {"entity_id": "button.philips_cn_1061200910_lite_toggle_a_2_1", "state": "2025-11-04T13:40:00.537513+00:00", "attributes": {"friendly_name": "卧室的米家智能台灯Lite  灯 开关状态切换"}, "last_changed": "2025-11-04T13:40:00.537551+00:00", "last_reported": "2025-11-04T13:40:00.537551+00:00", "last_updated": "2025-11-04T13:40:00.537551+00:00", "context": {"id": "01K97HH3CSRRDFT86ZCDXZHSJ4", "parent_id": null, "user_id": "b1194095a8dd412f9fd16b8ae0689951"}}, {"entity_id": "button.philips_cn_1061200910_lite_brightness_down_a_3_1", "state": "unknown", "attributes": {"friendly_name": "卧室的米家智能台灯Lite * 个性化功能 亮度-"}, "last_changed": "2025-11-04T10:37:22.912410+00:00", "last_reported": "2025-11-04T10:37:22.912410+00:00", "last_updated": "2025-11-04T10:37:22.912410+00:00", "context": {"id": "01K9772PK0ZWWNXQJD23BN5V1B", "parent_id": null, "user_id": null}}, {"entity_id": "button.philips_cn_1061200910_lite_brightness_up_a_3_2", "state": "unknown", "attributes": {"friendly_name": "卧室的米家智能台灯Lite * 个性化功能 亮度+"}, "last_changed": "2025-11-04T10:37:22.912454+00:00", "last_reported": "2025-11-04T10:37:22.912454+00:00", "last_updated": "2025-11-04T10:37:22.912454+00:00", "context": {"id": "01K9772PK09582B7H7H9RA5PPA", "parent_id": null, "user_id": null}}, {"entity_id": "button.lumi_cn_551385025_mcn001_identify_a_20_1", "state": "2025-11-04T10:43:27.034386+00:00", "attributes": {"friendly_name": "小米智能多模网关2  设备确认 设备响应"}, "last_changed": "2025-11-05T01:51:07.848411+00:00", "last_reported": "2025-11-05T01:51:07.848411+00:00", "last_updated": "2025-11-05T01:51:07.848411+00:00", "context": {"id": "01K98VBTJ85N8SFB6XWHRJ91ZD", "parent_id": null, "user_id": null}}, {"entity_id": "button.xiaomi_cn_701074704_l15a_stop_alarm_a_6_1", "state": "unknown", "attributes": {"friendly_name": "小米AI音箱（第二代）  闹钟 停止闹钟"}, "last_changed": "2025-11-05T01:51:16.443567+00:00", "last_reported": "2025-11-05T01:51:16.443567+00:00", "last_updated": "2025-11-05T01:51:16.443567+00:00", "context": {"id": "01K98VC2YV0QZ26H19VRDFZB8A", "parent_id": null, "user_id": null}}, {"entity_id": "button.xiaomi_cn_701074704_l15a_wake_up_a_7_1", "state": "unknown", "attributes": {"friendly_name": "小米AI音箱（第二代）  智能音箱 唤醒"}, "last_changed": "2025-11-05T01:51:16.443666+00:00", "last_reported": "2025-11-05T01:51:16.443666+00:00", "last_updated": "2025-11-05T01:51:16.443666+00:00", "context": {"id": "01K98VC2YV0GXVDX0D98H3F2HP", "parent_id": null, "user_id": null}}, {"entity_id": "button.xiaomi_cn_701074704_l15a_play_radio_a_7_2", "state": "2025-11-04T13:42:59.180249+00:00", "attributes": {"friendly_name": "小米AI音箱（第二代）  智能音箱 播放电台"}, "last_changed": "2025-11-05T01:51:16.443698+00:00", "last_reported": "2025-11-05T01:51:16.443698+00:00", "last_updated": "2025-11-05T01:51:16.443698+00:00", "context": {"id": "01K98VC2YVGJXX957TV0RKBEP6", "parent_id": null, "user_id": null}}, {"entity_id": "button.xiaomi_cn_701074704_l15a_play_music_a_7_5", "state": "unknown", "attributes": {"friendly_name": "小米AI音箱（第二代）  智能音箱 播放音乐"}, "last_changed": "2025-11-05T01:51:16.443728+00:00", "last_reported": "2025-11-05T01:51:16.443728+00:00", "last_updated": "2025-11-05T01:51:16.443728+00:00", "context": {"id": "01K98VC2YVF9SRJMMYDD7FTVV9", "parent_id": null, "user_id": null}}, {"entity_id": "button.xiaomi_cn_701074704_l15a_tv_switchon_a_8_1", "state": "2025-11-04T12:56:42.554993+00:00", "attributes": {"friendly_name": "小米AI音箱（第二代） * 电视开关 打开电视"}, "last_changed": "2025-11-05T01:51:16.443752+00:00", "last_reported": "2025-11-05T01:51:16.443752+00:00", "last_updated": "2025-11-05T01:51:16.443752+00:00", "context": {"id": "01K98VC2YVW0JPJ4TFWTWVQ449", "parent_id": null, "user_id": null}}, {"entity_id": "event.philips_cn_1061200910_lite_notify_you_e_3_1", "state": "unknown", "attributes": {"event_types": ["推送休息事件"], "event_type": "推送休息事件", "friendly_name": "卧室的米家智能台灯Lite * 个性化功能 推送休息事件"}, "last_changed": "2025-11-04T10:37:22.912500+00:00", "last_reported": "2025-11-04T10:37:22.912500+00:00", "last_updated": "2025-11-04T10:37:22.912500+00:00", "context": {"id": "01K9772PK0QF3K4SRMY7BRANP1", "parent_id": null, "user_id": null}}, {"entity_id": "event.lumi_cn_551385025_mcn001_network_changed_e_2_1", "state": "unknown", "attributes": {"event_types": ["网络发生变化"], "event_type": null, "friendly_name": "小米智能多模网关2  网关 网络发生变化"}, "last_changed": "2025-11-05T01:51:07.848524+00:00", "last_reported": "2025-11-05T01:51:07.848524+00:00", "last_updated": "2025-11-05T01:51:07.848524+00:00", "context": {"id": "01K98VBTJ8VVGV2NMZ62XY2ND8", "parent_id": null, "user_id": null}}, {"entity_id": "event.lumi_cn_551385025_mcn001_click_e_4_1", "state": "unknown", "attributes": {"event_types": ["单击"], "event_type": null, "device_class": "button", "friendly_name": "小米智能多模网关2  网关按键 单击"}, "last_changed": "2025-11-05T01:51:07.848566+00:00", "last_reported": "2025-11-05T01:51:07.848566+00:00", "last_updated": "2025-11-05T01:51:07.848566+00:00", "context": {"id": "01K98VBTJ8MXNSHXKM5X249SQ7", "parent_id": null, "user_id": null}}, {"entity_id": "event.lumi_cn_551385025_mcn001_double_click_e_4_2", "state": "unknown", "attributes": {"event_types": ["双击"], "event_type": null, "device_class": "button", "friendly_name": "小米智能多模网关2  网关按键 双击"}, "last_changed": "2025-11-05T01:51:07.848596+00:00", "last_reported": "2025-11-05T01:51:07.848596+00:00", "last_updated": "2025-11-05T01:51:07.848596+00:00", "context": {"id": "01K98VBTJ8EQ52VM7F1D5N2BZR", "parent_id": null, "user_id": null}}, {"entity_id": "event.lumi_cn_551385025_mcn001_long_press_e_4_3", "state": "unknown", "attributes": {"event_types": ["长按"], "event_type": null, "device_class": "button", "friendly_name": "小米智能多模网关2  网关按键 长按"}, "last_changed": "2025-11-05T01:51:07.848625+00:00", "last_reported": "2025-11-05T01:51:07.848625+00:00", "last_updated": "2025-11-05T01:51:07.848625+00:00", "context": {"id": "01K98VBTJ8CJ181MHEQXHK830X", "parent_id": null, "user_id": null}}, {"entity_id": "event.lumi_cn_551385025_mcn001_event_unbind_e_7_1", "state": "unknown", "attributes": {"event_types": ["网关防误删功能开启后，尝试长按10s重置键上报该事件"], "event_type": null, "friendly_name": "小米智能多模网关2 * 网关防误删功能 网关防误删功能开启后，尝试长按10s重置键上报该事件"}, "last_changed": "2025-11-05T01:51:07.848651+00:00", "last_reported": "2025-11-05T01:51:07.848651+00:00", "last_updated": "2025-11-05T01:51:07.848651+00:00", "context": {"id": "01K98VBTJ8HF4B5BESZNDTZG85", "parent_id": null, "user_id": null}}, {"entity_id": "event.xiaomi_cn_blt_3_1ftnm7360c800_pir1_device_be_reset_e_2_1028", "state": "unknown", "attributes": {"event_types": ["设备被重置"], "event_type": null, "friendly_name": "客厅的小米人体传感器2S  移动检测传感器 设备被重置"}, "last_changed": "2025-11-04T10:37:22.913311+00:00", "last_reported": "2025-11-04T10:37:22.913311+00:00", "last_updated": "2025-11-04T10:37:22.913311+00:00", "context": {"id": "01K9772PK1EYWP4GB6HGW9KDZM", "parent_id": null, "user_id": null}}, {"entity_id": "event.xiaomi_cn_blt_3_1ftnm7360c800_pir1_motion_detected_e_2_1008", "state": "2025-11-04T06:55:40.098+00:00", "attributes": {"event_types": ["检测到移动"], "event_type": "检测到移动", "光照度": 0.0, "device_class": "motion", "friendly_name": "客厅的小米人体传感器2S  移动检测传感器 检测到移动"}, "last_changed": "2025-11-04T10:37:22.913364+00:00", "last_reported": "2025-11-04T10:37:22.913364+00:00", "last_updated": "2025-11-04T10:37:22.913364+00:00", "context": {"id": "01K9772PK1N8XDYGNJM074HYV5", "parent_id": null, "user_id": null}}, {"entity_id": "light.philips_cn_1061200910_lite_s_2", "state": "on", "attributes": {"effect_list": ["mode 0", "mode 1", "mode 2"], "supported_color_modes": ["brightness"], "effect": "mode 0", "color_mode": "brightness", "brightness": 102, "friendly_name": "卧室的米家智能台灯Lite  灯", "supported_features": 4}, "last_changed": "2025-11-05T02:20:03.722973+00:00", "last_reported": "2025-11-05T02:31:09.032755+00:00", "last_updated": "2025-11-05T02:31:09.032755+00:00", "context": {"id": "01K98XN35KFFNCP50VY7HTEK99", "parent_id": null, "user_id": "b1194095a8dd412f9fd16b8ae0689951"}}, {"entity_id": "light.yeelink_cn_1162511951_mbulb3_s_2", "state": "on", "attributes": {"min_color_temp_kelvin": 2700, "max_color_temp_kelvin": 6500, "min_mireds": 153, "max_mireds": 370, "supported_color_modes": ["color_temp"], "color_mode": "color_temp", "brightness": 102, "color_temp_kelvin": 4000, "color_temp": 250, "hs_color": [26.812, 34.87], "rgb_color": [255, 206, 166], "xy_color": [0.42, 0.365], "friendly_name": "客厅的灯泡  灯", "supported_features": 0}, "last_changed": "2025-11-05T02:20:35.312397+00:00", "last_reported": "2025-11-05T02:31:08.672861+00:00", "last_updated": "2025-11-05T02:31:08.672861+00:00", "context": {"id": "01K98XN2MY1DDAE83V6N9XWJ1X", "parent_id": null, "user_id": "b1194095a8dd412f9fd16b8ae0689951"}}, {"entity_id": "media_player.xiaomi_cn_701074704_l15a", "state": "playing", "attributes": {"volume_level": 0.35, "is_volume_muted": false, "media_content_type": "music", "device_class": "speaker", "friendly_name": "小米AI音箱（第二代）  音箱", "supported_features": 21565}, "last_changed": "2025-11-05T02:24:27.582860+00:00", "last_reported": "2025-11-05T02:29:06.770845+00:00", "last_updated": "2025-11-05T02:29:06.770845+00:00", "context": {"id": "01K98XHBFDAC4FY2HMDVDKFNJ7", "parent_id": null, "user_id": "b1194095a8dd412f9fd16b8ae0689951"}}, {"entity_id": "notify.xiaomi_cn_701074704_l15a_seek_a_3_1", "state": "unknown", "attributes": {"action params": "[播放控制时间(int)]", "friendly_name": "小米AI音箱（第二代）  播放控制 播放控制", "supported_features": 0}, "last_changed": "2025-11-05T01:51:16.443840+00:00", "last_reported": "2025-11-05T01:51:16.443840+00:00", "last_updated": "2025-11-05T01:51:16.443840+00:00", "context": {"id": "01K98VC2YVS8TKP75RZWDSHB49", "parent_id": null, "user_id": null}}, {"entity_id": "notify.xiaomi_cn_701074704_l15a_play_text_a_7_3", "state": "2025-11-05T02:26:03.663163+00:00", "attributes": {"action params": "[文本内容(str)]", "friendly_name": "小米AI音箱（第二代）  智能音箱 播放文本", "supported_features": 0}, "last_changed": "2025-11-05T02:26:03.663204+00:00", "last_reported": "2025-11-05T02:26:03.663204+00:00", "last_updated": "2025-11-05T02:26:03.663204+00:00", "context": {"id": "01K98XBS8EEGSGRQBP2GTX1HP8", "parent_id": null, "user_id": "b1194095a8dd412f9fd16b8ae0689951"}}, {"entity_id": "notify.xiaomi_cn_701074704_l15a_execute_text_directive_a_7_4", "state": "2025-11-05T02:21:41.005456+00:00", "attributes": {"action params": "[文本内容(str), 指令静默执行(bool)]", "friendly_name": "小米AI音箱（第二代）  智能音箱 执行文本指令", "supported_features": 0}, "last_changed": "2025-11-05T02:21:41.005496+00:00", "last_reported": "2025-11-05T02:21:41.005496+00:00", "last_updated": "2025-11-05T02:21:41.005496+00:00", "context": {"id": "01K98X3RRD8HWK33CV14T5TCCY", "parent_id": null, "user_id": "b1194095a8dd412f9fd16b8ae0689951"}}, {"entity_id": "number.philips_cn_1061200910_lite_dvalue_p_3_1", "state": "0", "attributes": {"min": 0, "max": 21600, "step": 1, "mode": "auto", "unit_of_measurement": "s", "icon": "mdi:clock", "friendly_name": "卧室的米家智能台灯Lite * 个性化功能 延时关灯的时间"}, "last_changed": "2025-11-04T10:37:23.913718+00:00", "last_reported": "2025-11-04T10:37:23.913718+00:00", "last_updated": "2025-11-04T10:37:23.913718+00:00", "context": {"id": "01K9772QJ9TEZNGZ4BC3ARXC5H", "parent_id": null, "user_id": null}}, {"entity_id": "number.philips_cn_1061200910_lite_notify_time_p_3_3", "state": "40", "attributes": {"min": 1, "max": 120, "step": 1, "mode": "auto", "unit_of_measurement": "min", "icon": "mdi:clock", "friendly_name": "卧室的米家智能台灯Lite * 个性化功能 视疲劳提醒的时间间隔设"}, "last_changed": "2025-11-04T10:37:23.913787+00:00", "last_reported": "2025-11-04T10:37:23.913787+00:00", "last_updated": "2025-11-04T10:37:23.913787+00:00", "context": {"id": "01K9772QJ9TCGZC2XFFYNX12KR", "parent_id": null, "user_id": null}}, {"entity_id": "number.lumi_cn_551385025_mcn001_indicator_brightness_p_6_3", "state": "100", "attributes": {"min": 1, "max": 100, "step": 1, "mode": "auto", "unit_of_measurement": "%", "icon": "mdi:percent", "friendly_name": "小米智能多模网关2 * 指示灯与勿扰模式配置 指示灯亮度"}, "last_changed": "2025-11-05T01:51:08.850524+00:00", "last_reported": "2025-11-05T01:51:08.850524+00:00", "last_updated": "2025-11-05T01:51:08.850524+00:00", "context": {"id": "01K98VBVHJJCTD95VJAGFY74VY", "parent_id": null, "user_id": null}}, {"entity_id": "select.lumi_cn_551385025_mcn001_status_p_6_1", "state": "Open", "attributes": {"options": ["Close", "Open"], "friendly_name": "小米智能多模网关2 * 指示灯与勿扰模式配置 勿扰模式状态(开/关)"}, "last_changed": "2025-11-05T01:51:08.850624+00:00", "last_reported": "2025-11-05T01:51:08.850624+00:00", "last_updated": "2025-11-05T01:51:08.850624+00:00", "context": {"id": "01K98VBVHJ6S8F3NNQ2DF9MQAH", "parent_id": null, "user_id": null}}, {"entity_id": "select.lumi_cn_551385025_mcn001_status_p_7_1", "state": "Close", "attributes": {"options": ["Close", "Open"], "friendly_name": "小米智能多模网关2 * 网关防误删功能 网关防误删状态"}, "last_changed": "2025-11-05T01:51:08.850656+00:00", "last_reported": "2025-11-05T01:51:08.850656+00:00", "last_updated": "2025-11-05T01:51:08.850656+00:00", "context": {"id": "01K98VBVHJX4KV2Z7W3FD10GCK", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.lumi_cn_551385025_mcn001_access_mode_p_2_1", "state": "2.4G 无线", "attributes": {"options": ["有线", "2.4G 无线", "5G 无线"], "device_class": "enum", "icon": "mdi:format-text", "friendly_name": "小米智能多模网关2  网关 接入方式"}, "last_changed": "2025-11-05T01:51:08.850704+00:00", "last_reported": "2025-11-05T01:51:10.927228+00:00", "last_updated": "2025-11-05T01:51:08.850704+00:00", "context": {"id": "01K98VBVHJ4350SVTK9TRVAHR9", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.lumi_cn_551385025_mcn001_ip_address_p_2_2", "state": "192.168.43.141", "attributes": {"icon": "mdi:ip", "friendly_name": "小米智能多模网关2  网关 IP地址"}, "last_changed": "2025-11-05T01:51:08.850734+00:00", "last_reported": "2025-11-05T01:51:10.974984+00:00", "last_updated": "2025-11-05T01:51:08.850734+00:00", "context": {"id": "01K98VBVHJS0FSJMG9Q3A3GFSX", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3", "state": "shuashua", "attributes": {"friendly_name": "小米智能多模网关2  网关 WiFi网络名称(写权限无效)"}, "last_changed": "2025-11-05T01:51:08.850765+00:00", "last_reported": "2025-11-05T01:51:08.850765+00:00", "last_updated": "2025-11-05T01:51:08.850765+00:00", "context": {"id": "01K98VBVHJJKVE6AC1SW5AYBXP", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5", "state": "", "attributes": {"friendly_name": "小米智能多模网关2  网关 网络变化状态string_fmt:{access-mode:{last:0,now:1],ip:{last:xx,now:xx},wifi-ssid:{last:xx,now:xx},time:12345678}}}"}, "last_changed": "2025-11-05T01:51:08.850794+00:00", "last_reported": "2025-11-05T01:51:10.972131+00:00", "last_updated": "2025-11-05T01:51:08.850794+00:00", "context": {"id": "01K98VBVHJPYRQNDKQTG3TK0RS", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.xiaomi_cn_blt_3_1ftnm7360c800_pir1_no_motion_duration_p_2_1024", "state": "300", "attributes": {"unit_of_measurement": "s", "icon": "mdi:clock", "friendly_name": "客厅的小米人体传感器2S  移动检测传感器 无移动状态持续时间"}, "last_changed": "2025-11-04T10:37:23.914657+00:00", "last_reported": "2025-11-04T10:37:23.914657+00:00", "last_updated": "2025-11-04T10:37:23.914657+00:00", "context": {"id": "01K9772QJAAVXT05KYXCSH0NVD", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.xiaomi_cn_blt_3_1ftnm7360c800_pir1_illumination_p_2_1005", "state": "0.0", "attributes": {"state_class": "measurement", "unit_of_measurement": "lx", "device_class": "illuminance", "friendly_name": "客厅的小米人体传感器2S  移动检测传感器 光照度"}, "last_changed": "2025-11-04T11:17:10.528338+00:00", "last_reported": "2025-11-04T11:17:10.528338+00:00", "last_updated": "2025-11-04T11:17:10.528338+00:00", "context": {"id": "01K979BJ80WPAE66QCAT5157EE", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.xiaomi_cn_blt_3_1ftnm7360c800_pir1_custom_no_motion_time_p_2_1053", "state": "10", "attributes": {"unit_of_measurement": "min", "icon": "mdi:clock", "friendly_name": "客厅的小米人体传感器2S  移动检测传感器 自定义超时无人移动时间"}, "last_changed": "2025-11-04T10:37:23.914741+00:00", "last_reported": "2025-11-04T10:37:23.914741+00:00", "last_updated": "2025-11-04T10:37:23.914741+00:00", "context": {"id": "01K9772QJAVCV802V3GDN2QKRF", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.xiaomi_cn_blt_3_1ftnm7360c800_pir1_battery_level_p_3_1003", "state": "100", "attributes": {"state_class": "measurement", "unit_of_measurement": "%", "device_class": "battery", "friendly_name": "客厅的小米人体传感器2S  电池 电池电量"}, "last_changed": "2025-11-04T10:37:23.914777+00:00", "last_reported": "2025-11-04T10:37:23.914777+00:00", "last_updated": "2025-11-04T10:37:23.914777+00:00", "context": {"id": "01K9772QJA3WG9QMYFXH62A2JB", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.isa_cn_blt_3_1md0u6qht0k00_dw2hl_illumination_p_2_1", "state": "弱", "attributes": {"options": ["弱", "强"], "device_class": "enum", "icon": "mdi:format-text", "friendly_name": "客厅窗户的门窗传感器  门窗传感器 光照度"}, "last_changed": "2025-11-04T10:37:23.914851+00:00", "last_reported": "2025-11-04T10:37:23.914851+00:00", "last_updated": "2025-11-04T10:37:23.914851+00:00", "context": {"id": "01K9772QJAQ26TMV65RZNECXE7", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.isa_cn_blt_3_1md0u6qht0k00_dw2hl_battery_level_p_3_1", "state": "100", "attributes": {"state_class": "measurement", "unit_of_measurement": "%", "device_class": "battery", "friendly_name": "客厅窗户的门窗传感器  电量 电池电量"}, "last_changed": "2025-11-04T10:37:23.914886+00:00", "last_reported": "2025-11-04T10:37:23.914886+00:00", "last_updated": "2025-11-04T10:37:23.914886+00:00", "context": {"id": "01K9772QJAJAPZ1328WP2Y0AEV", "parent_id": null, "user_id": null}}, {"entity_id": "switch.philips_cn_1061200910_lite_notify_switch_p_3_2", "state": "off", "attributes": {"device_class": "switch", "friendly_name": "卧室的米家智能台灯Lite * 个性化功能 开启/关闭视疲劳提醒功能 "}, "last_changed": "2025-11-04T13:20:28.190030+00:00", "last_reported": "2025-11-04T13:20:28.190030+00:00", "last_updated": "2025-11-04T13:20:28.190030+00:00", "context": {"id": "01K97GDAA5Q3TFVWPP2KB8X7CT", "parent_id": null, "user_id": "b1194095a8dd412f9fd16b8ae0689951"}}, {"entity_id": "switch.philips_cn_1061200910_lite_night_light_en_p_3_4", "state": "on", "attributes": {"device_class": "switch", "friendly_name": "卧室的米家智能台灯Lite * 个性化功能 开启/关闭夜间模式"}, "last_changed": "2025-11-05T02:11:04.473347+00:00", "last_reported": "2025-11-05T02:11:04.473347+00:00", "last_updated": "2025-11-05T02:11:04.473347+00:00", "context": {"id": "01K98WGB045SMR5GMTD58WVMZ9", "parent_id": null, "user_id": "b1194095a8dd412f9fd16b8ae0689951"}}, {"entity_id": "switch.cuco_cn_269067598_cp1_on_p_2_1", "state": "on", "attributes": {"device_class": "switch", "friendly_name": "插座  开关 开关"}, "last_changed": "2025-11-05T02:11:35.289423+00:00", "last_reported": "2025-11-05T02:11:35.289423+00:00", "last_updated": "2025-11-05T02:11:35.289423+00:00", "context": {"id": "01K98WH918DSAX2388YRBCAZSJ", "parent_id": null, "user_id": "b1194095a8dd412f9fd16b8ae0689951"}}, {"entity_id": "switch.xiaomi_cn_701074704_l15a_mute_p_4_1", "state": "off", "attributes": {"device_class": "switch", "friendly_name": "小米AI音箱（第二代）  麦克风 静音"}, "last_changed": "2025-11-05T01:51:17.444402+00:00", "last_reported": "2025-11-05T01:51:17.444402+00:00", "last_updated": "2025-11-05T01:51:17.444402+00:00", "context": {"id": "01K98VC3Y4C23HRGF2E7GMCJBY", "parent_id": null, "user_id": null}}, {"entity_id": "text.lumi_cn_551385025_mcn001_effective_time_p_6_2", "state": "21:00-09:00", "attributes": {"mode": "text", "min": 0, "max": 255, "pattern": null, "friendly_name": "小米智能多模网关2 * 指示灯与勿扰模式配置 生效时间段(格式:21:00-09:00)"}, "last_changed": "2025-11-05T01:51:08.850829+00:00", "last_reported": "2025-11-05T01:51:08.850829+00:00", "last_updated": "2025-11-05T01:51:08.850829+00:00", "context": {"id": "01K98VBVHJVGKA7RP61PGW5A51", "parent_id": null, "user_id": null}}, {"entity_id": "sensor.xiaomi_cn_701074704_l15a_audio_id_p_7_4", "state": "660083501862458", "attributes": {"friendly_name": "小米AI音箱（第二代）  智能音箱 音频ID"}, "last_changed": "2025-11-05T02:28:27.984591+00:00", "last_reported": "2025-11-05T02:28:27.984591+00:00", "last_updated": "2025-11-05T02:28:27.984591+00:00", "context": {"id": "01K98XG66G2VMKRFEJFKDGBDE6", "parent_id": null, "user_id": null}}, {"entity_id": "switch.xiaomi_cn_701074704_l15a_sleep_mode_p_7_3", "state": "off", "attributes": {"device_class": "switch", "friendly_name": "小米AI音箱（第二代）  智能音箱 睡眠模式"}, "last_changed": "2025-11-05T01:51:17.444426+00:00", "last_reported": "2025-11-05T01:51:17.444426+00:00", "last_updated": "2025-11-05T01:51:17.444426+00:00", "context": {"id": "01K98VC3Y4RQ910CBTYWZNX0KF", "parent_id": null, "user_id": null}}, {"entity_id": "switch.xiaomi_cn_701074704_l15a_no_disturb_p_9_1", "state": "on", "attributes": {"device_class": "switch", "friendly_name": "小米AI音箱（第二代）  勿扰 勿扰"}, "last_changed": "2025-11-05T01:51:17.444445+00:00", "last_reported": "2025-11-05T01:51:17.444445+00:00", "last_updated": "2025-11-05T01:51:17.444445+00:00", "context": {"id": "01K98VC3Y416YTJWBC25PQHQJ0", "parent_id": null, "user_id": null}}, {"entity_id": "text.xiaomi_cn_701074704_l15a_enable_time_period_p_9_2", "state": "22:00:00-06:00:00", "attributes": {"mode": "text", "min": 0, "max": 255, "pattern": null, "friendly_name": "小米AI音箱（第二代）  勿扰 启用时间段(格式为：'00:00:00-00:00:00')"}, "last_changed": "2025-11-05T01:51:17.444476+00:00", "last_reported": "2025-11-05T01:51:17.444476+00:00", "last_updated": "2025-11-05T01:51:17.444476+00:00", "context": {"id": "01K98VC3Y410J17814JE79AEGW", "parent_id": null, "user_id": null}}]
+2025-11-05 10:32:48,147 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  get_states_by_entity_id (call_VoKkWbKiKlbvcujNwVQgFUKJ)
+ Call ID: call_VoKkWbKiKlbvcujNwVQgFUKJ
+  Args:
+    entity_id: sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3
+2025-11-05 10:32:48,191 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: get_states_by_entity_id
+
+{"entity_id": "sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3", "state": "shuashua", "attributes": {"friendly_name": "小米智能多模网关2  网关 WiFi网络名称(写权限无效)"}, "last_changed": "2025-11-05T01:51:08.850765+00:00", "last_reported": "2025-11-05T01:51:08.850765+00:00", "last_updated": "2025-11-05T01:51:08.850765+00:00", "context": {"id": "01K98VBVHJJKVE6AC1SW5AYBXP", "parent_id": null, "user_id": null}}
+2025-11-05 10:32:49,516 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  get_states_by_entity_id (call_DvLtnSyLgMk0xFWp8Wyg0DYO)
+ Call ID: call_DvLtnSyLgMk0xFWp8Wyg0DYO
+  Args:
+    entity_id: sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5
+2025-11-05 10:32:49,567 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: get_states_by_entity_id
+
+{"entity_id": "sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5", "state": "", "attributes": {"friendly_name": "小米智能多模网关2  网关 网络变化状态string_fmt:{access-mode:{last:0,now:1],ip:{last:xx,now:xx},wifi-ssid:{last:xx,now:xx},time:12345678}}}"}, "last_changed": "2025-11-05T01:51:08.850794+00:00", "last_reported": "2025-11-05T01:51:10.972131+00:00", "last_updated": "2025-11-05T01:51:08.850794+00:00", "context": {"id": "01K98VBVHJPYRQNDKQTG3TK0RS", "parent_id": null, "user_id": null}}
+2025-11-05 10:33:46,108 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+
+User query: Is the home's gateway device connected to a network other than the configured home Wi‑Fi? (Check gateway current SSID against the configured home SSID in the smart home system; if different, user wants lights toggled off then on.)
+
+Thought: I will (1) list entities to find the gateway SSID sensor and any possible configured/home SSID entity, (2) read the gateway current SSID sensor, (3) read the access-mode sensor as fallback, (4) attempt to locate a configured/home SSID entity by scanning all entities, and (5) implement a single Python function that returns True if the gateway SSID differs from the configured SSID, otherwise False. If no configured SSID entity is found, the function will return False (unable to confirm a mismatch).
+
+Action: get_all_entity_id
+Action Input: {}
+Observation: (truncated summary) Received the full entity list. Relevant entities discovered:
+- sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3 — state: "shuashua" (friendly_name: 网关 WiFi网络名称)
+- sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5 — state: "" with friendly_name indicating format includes wifi-ssid:{last:xx,now:xx}
+- light.philips_cn_1061200910_lite_s_2 — state: "on"
+- light.yeelink_cn_1162511951_mbulb3_s_2 — state: "on"
+No obvious input_text or sensor that explicitly stores a configured/home SSID was present in the entity list.
+
+Action: get_states_by_entity_id
+Action Input: {"entity_id":"sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3"}
+Observation: Returned state object:
+{"entity_id":"sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3","state":"shuashua","attributes":{"friendly_name":"小米智能多模网关2  网关 WiFi网络名称(写权限无效)"}...}
+
+Action: get_states_by_entity_id
+Action Input: {"entity_id":"sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5"}
+Observation: Returned state object:
+{"entity_id":"sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5","state":"","attributes":{"friendly_name":"小米智能多模网关2  网关 网络变化状态string_fmt:{access-mode:{last:0,now:1],ip:{last:xx,now:xx},wifi-ssid:{last:xx,now:xx},time:12345678}}}" }...}
+(access-mode sensor contains format hint but no actual last/now wifi-ssid values in the state/attributes from this call)
+
+Thought: I have the gateway's current SSID ("shuashua") but did not find any explicit configured/home SSID entity in the entity list. Therefore the system does not currently expose a distinct configured home SSID that I can read. I'll implement a robust check function that:
+- reads the gateway current SSID,
+- tries to auto-discover an entity that likely stores a configured SSID (scanning all entities for "ssid" or "wifi" in entity_id/friendly_name),
+- falls back to attempting to parse the access-mode sensor,
+- returns True only if a configured SSID is found and differs from the current SSID; otherwise returns False.
+
+API call documentation (brief):
+- get_all_entity_id()
+  - Input: none
+  - Returns: array of state objects (each with keys: entity_id, state, attributes, last_changed, last_updated, context).
+- get_states_by_entity_id({ "entity_id": "<entity_id>" })
+  - Input: dict containing "entity_id"
+  - Returns: state object for that entity (or 404-like error if not found). State object includes at minimum "entity_id", "state", and "attributes".
+- get_services_by_domain({ "domain": "<domain>" })
+  - Input: dict containing "domain" (e.g., "light")
+  - Returns: services available for that domain (not required for the check).
+- execute_domain_service_by_entity_id({ "body": "<json string>", "domain": "<domain>", "service": "<service>" })
+  - Input: body (JSON string) must include exactly one entity_id; domain and service names required (e.g., domain "light", service "turn_off") — used to run actions like toggling lights.
+
+Python code (single function, no arguments). The function uses the provided helper calls to read states and returns True if gateway is on a different SSID than the configured/home SSID that it can discover; otherwise False. The last line is an example call.
+
+def check_gateway_on_different_ssid():
+    """
+    Returns True if the gateway's current connected SSID is different from the configured/home SSID
+    discovered in the smart home system. Returns False if they are the same or if a configured SSID
+    cannot be found/read.
+    """
+    # Primary gateway SSID sensor entity
+    gw_entity = "sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3"
+    # Access-mode sensor (fallback parser)
+    access_entity = "sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5"
+
+    # 1) Read gateway current SSID
+    gw_state_obj = functions.get_states_by_entity_id({"entity_id": gw_entity})
+    if not gw_state_obj or "state" not in gw_state_obj:
+        # Can't read gateway SSID -> cannot determine mismatch
+        return False
+    current_ssid = (gw_state_obj.get("state") or "").strip()
+    if not current_ssid:
+        return False
+
+    # 2) Attempt to discover a configured/home SSID entity by scanning all entities
+    expected_ssid = None
+    all_entities = functions.get_all_entity_id() or []
+    for ent in all_entities:
+        eid = ent.get("entity_id", "") or ""
+        attrs = ent.get("attributes", {}) or {}
+        friendly = (attrs.get("friendly_name") or "").lower()
+        # Look for likely configured-SSID storage: names containing 'ssid' or 'wifi' or 'home ssid'
+        if ("ssid" in eid.lower()) or ("ssid" in friendly) or ("wifi" in eid.lower() and "configured" in eid.lower()) or ("home ssid" in friendly):
+            # read that entity's current state
+            try:
+                candidate = functions.get_states_by_entity_id({"entity_id": eid})
+            except Exception:
+                candidate = None
+            if candidate and "state" in candidate:
+                cand_state = (candidate.get("state") or "").strip()
+                # skip empty or placeholder values
+                if cand_state not in ("", "unknown", "unavailable"):
+                    expected_ssid = cand_state
+                    break
+
+    # 3) Fallback: try to parse access-mode sensor for wifi-ssid values if no explicit entity found
+    if expected_ssid is None:
+        try:
+            access_obj = functions.get_states_by_entity_id({"entity_id": access_entity})
+        except Exception:
+            access_obj = None
+        if access_obj:
+            # try to look into attributes text for wifi-ssid:{last:xx,now:yy}
+            text_sources = []
+            if isinstance(access_obj.get("state"), str):
+                text_sources.append(access_obj.get("state"))
+            attrs = access_obj.get("attributes") or {}
+            for v in attrs.values():
+                if isinstance(v, str):
+                    text_sources.append(v)
+            combined = " ".join(text_sources)
+            import re
+            # regex to find last:VALUE or now:VALUE after wifi-ssid
+            m = re.search(r"wifi-ssid:\{[^}]*last:([^,}\]]+)", combined)
+            if not m:
+                m = re.search(r"wifi-ssid:\{[^}]*now:([^,}\]]+)", combined)
+            if m:
+                expected_ssid = m.group(1).strip().strip(' "\'')
+
+    # 4) If we still don't have a configured SSID, we cannot reliably check -> return False
+    if expected_ssid is None or expected_ssid == "":
+        return False
+
+    # 5) Normalize and compare
+    if current_ssid.lower().strip() != expected_ssid.lower().strip():
+        return True
+    else:
+        return False
+
+# Example call
+check_gateway_on_different_ssid()
+
+Final Answer:
+- Current gateway SSID observed: "shuashua" (from sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3).
+- I could not find a separate configured/home SSID entity in the system's entity list (no explicit input_text/sensor storing the configured home SSID). The access-mode sensor exists but contains no usable last/now wifi-ssid data in the current state/attributes.
+- Therefore, using the discovered data, the condition "gateway is connected to a network other than the configured home Wi‑Fi" cannot be confirmed. The function I wrote returns False in this environment because no configured/home SSID could be located to compare against.
+- Function name: check_gateway_on_different_ssid
+
+If you want, I can:
+- create and store a configured SSID value in an input_text helper (so the function can reliably compare), or
+- if you know the entity_id that stores your configured home SSID, tell me it and I will adapt the function to read that entity directly and then (if True) show how to toggle the lights using execute_domain_service_by_entity_id.
+2025-11-05 10:33:46,110 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: ConditionCheckerTool
+
+User query: Is the home's gateway device connected to a network other than the configured home Wi‑Fi? (Check gateway current SSID against the configured home SSID in the smart home system; if different, user wants lights toggled off then on.)
+
+Thought: I will (1) list entities to find the gateway SSID sensor and any possible configured/home SSID entity, (2) read the gateway current SSID sensor, (3) read the access-mode sensor as fallback, (4) attempt to locate a configured/home SSID entity by scanning all entities, and (5) implement a single Python function that returns True if the gateway SSID differs from the configured SSID, otherwise False. If no configured SSID entity is found, the function will return False (unable to confirm a mismatch).
+
+Action: get_all_entity_id
+Action Input: {}
+Observation: (truncated summary) Received the full entity list. Relevant entities discovered:
+- sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3 — state: "shuashua" (friendly_name: 网关 WiFi网络名称)
+- sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5 — state: "" with friendly_name indicating format includes wifi-ssid:{last:xx,now:xx}
+- light.philips_cn_1061200910_lite_s_2 — state: "on"
+- light.yeelink_cn_1162511951_mbulb3_s_2 — state: "on"
+No obvious input_text or sensor that explicitly stores a configured/home SSID was present in the entity list.
+
+Action: get_states_by_entity_id
+Action Input: {"entity_id":"sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3"}
+Observation: Returned state object:
+{"entity_id":"sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3","state":"shuashua","attributes":{"friendly_name":"小米智能多模网关2  网关 WiFi网络名称(写权限无效)"}...}
+
+Action: get_states_by_entity_id
+Action Input: {"entity_id":"sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5"}
+Observation: Returned state object:
+{"entity_id":"sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5","state":"","attributes":{"friendly_name":"小米智能多模网关2  网关 网络变化状态string_fmt:{access-mode:{last:0,now:1],ip:{last:xx,now:xx},wifi-ssid:{last:xx,now:xx},time:12345678}}}" }...}
+(access-mode sensor contains format hint but no actual last/now wifi-ssid values in the state/attributes from this call)
+
+Thought: I have the gateway's current SSID ("shuashua") but did not find any explicit configured/home SSID entity in the entity list. Therefore the system does not currently expose a distinct configured home SSID that I can read. I'll implement a robust check function that:
+- reads the gateway current SSID,
+- tries to auto-discover an entity that likely stores a configured SSID (scanning all entities for "ssid" or "wifi" in entity_id/friendly_name),
+- falls back to attempting to parse the access-mode sensor,
+- returns True only if a configured SSID is found and differs from the current SSID; otherwise returns False.
+
+API call documentation (brief):
+- get_all_entity_id()
+  - Input: none
+  - Returns: array of state objects (each with keys: entity_id, state, attributes, last_changed, last_updated, context).
+- get_states_by_entity_id({ "entity_id": "<entity_id>" })
+  - Input: dict containing "entity_id"
+  - Returns: state object for that entity (or 404-like error if not found). State object includes at minimum "entity_id", "state", and "attributes".
+- get_services_by_domain({ "domain": "<domain>" })
+  - Input: dict containing "domain" (e.g., "light")
+  - Returns: services available for that domain (not required for the check).
+- execute_domain_service_by_entity_id({ "body": "<json string>", "domain": "<domain>", "service": "<service>" })
+  - Input: body (JSON string) must include exactly one entity_id; domain and service names required (e.g., domain "light", service "turn_off") — used to run actions like toggling lights.
+
+Python code (single function, no arguments). The function uses the provided helper calls to read states and returns True if gateway is on a different SSID than the configured/home SSID that it can discover; otherwise False. The last line is an example call.
+
+def check_gateway_on_different_ssid():
+    """
+    Returns True if the gateway's current connected SSID is different from the configured/home SSID
+    discovered in the smart home system. Returns False if they are the same or if a configured SSID
+    cannot be found/read.
+    """
+    # Primary gateway SSID sensor entity
+    gw_entity = "sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3"
+    # Access-mode sensor (fallback parser)
+    access_entity = "sensor.lumi_cn_551385025_mcn001_access_mode_p_2_5"
+
+    # 1) Read gateway current SSID
+    gw_state_obj = functions.get_states_by_entity_id({"entity_id": gw_entity})
+    if not gw_state_obj or "state" not in gw_state_obj:
+        # Can't read gateway SSID -> cannot determine mismatch
+        return False
+    current_ssid = (gw_state_obj.get("state") or "").strip()
+    if not current_ssid:
+        return False
+
+    # 2) Attempt to discover a configured/home SSID entity by scanning all entities
+    expected_ssid = None
+    all_entities = functions.get_all_entity_id() or []
+    for ent in all_entities:
+        eid = ent.get("entity_id", "") or ""
+        attrs = ent.get("attributes", {}) or {}
+        friendly = (attrs.get("friendly_name") or "").lower()
+        # Look for likely configured-SSID storage: names containing 'ssid' or 'wifi' or 'home ssid'
+        if ("ssid" in eid.lower()) or ("ssid" in friendly) or ("wifi" in eid.lower() and "configured" in eid.lower()) or ("home ssid" in friendly):
+            # read that entity's current state
+            try:
+                candidate = functions.get_states_by_entity_id({"entity_id": eid})
+            except Exception:
+                candidate = None
+            if candidate and "state" in candidate:
+                cand_state = (candidate.get("state") or "").strip()
+                # skip empty or placeholder values
+                if cand_state not in ("", "unknown", "unavailable"):
+                    expected_ssid = cand_state
+                    break
+
+    # 3) Fallback: try to parse access-mode sensor for wifi-ssid values if no explicit entity found
+    if expected_ssid is None:
+        try:
+            access_obj = functions.get_states_by_entity_id({"entity_id": access_entity})
+        except Exception:
+            access_obj = None
+        if access_obj:
+            # try to look into attributes text for wifi-ssid:{last:xx,now:yy}
+            text_sources = []
+            if isinstance(access_obj.get("state"), str):
+                text_sources.append(access_obj.get("state"))
+            attrs = access_obj.get("attributes") or {}
+            for v in attrs.values():
+                if isinstance(v, str):
+                    text_sources.append(v)
+            combined = " ".join(text_sources)
+            import re
+            # regex to find last:VALUE or now:VALUE after wifi-ssid
+            m = re.search(r"wifi-ssid:\{[^}]*last:([^,}\]]+)", combined)
+            if not m:
+                m = re.search(r"wifi-ssid:\{[^}]*now:([^,}\]]+)", combined)
+            if m:
+                expected_ssid = m.group(1).strip().strip(' "\'')
+
+    # 4) If we still don't have a configured SSID, we cannot reliably check -> return False
+    if expected_ssid is None or expected_ssid == "":
+        return False
+
+    # 5) Normalize and compare
+    if current_ssid.lower().strip() != expected_ssid.lower().strip():
+        return True
+    else:
+        return False
+
+# Example call
+check_gateway_on_different_ssid()
+
+Final Answer:
+- Current gateway SSID observed: "shuashua" (from sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3).
+- I could not find a separate configured/home SSID entity in the system's entity list (no explicit input_text/sensor storing the configured home SSID). The access-mode sensor exists but contains no usable last/now wifi-ssid data in the current state/attributes.
+- Therefore, using the discovered data, the condition "gateway is connected to a network other than the configured home Wi‑Fi" cannot be confirmed. The function I wrote returns False in this environment because no configured/home SSID could be located to compare against.
+- Function name: check_gateway_on_different_ssid
+
+If you want, I can:
+- create and store a configured SSID value in an input_text helper (so the function can reliably compare), or
+- if you know the entity_id that stores your configured home SSID, tell me it and I will adapt the function to read that entity directly and then (if True) show how to toggle the lights using execute_domain_service_by_entity_id.
+2025-11-05 10:34:05,343 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  NotifyOnConditionTool (call_jVCcSkXvqjilQfksnFGDu6i1)
+ Call ID: call_jVCcSkXvqjilQfksnFGDu6i1
+  Args:
+    function_name: check_gateway_on_different_ssid
+    notify_when: True
+    condition_description: 网关当前连接的 Wi‑Fi SSID 与系统中配置的家庭 Wi‑Fi SSID 不相同。
+    action_description: 当条件成立时执行：1) 立即对以下灯实体执行 light.turn_off：light.philips_cn_1061200910_lite_s_2, light.yeelink_cn_1162511951_mbulb3_s_2；2) 等待 2 秒；3) 对上述灯实体执行 light.turn_on。
+2025-11-05 10:34:05,345 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: NotifyOnConditionTool
+
+You will be notified when the condition occurs.
+2025-11-05 10:34:22,319 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+
+Thought:
+我会监测网关当前连接的 Wi‑Fi SSID，当它与系统中配置的家庭 Wi‑Fi 不一致时，按你要求把所有灯先关掉再打开（用于“吓吓他”）。目前系统里没有可读到的已配置家庭 SSID（无法立即判定为不一致），所以我已设置一个监听器：一旦检测到不一致就自动执行关灯->2 秒->开灯的动作。
+
+Action:
+notify_on_condition (已注册条件触发动作)
+
+Action input:
+{
+  "function_name": "check_gateway_on_different_ssid",
+  "notify_when": true,
+  "condition_description": "网关当前连接的 Wi‑Fi SSID 与系统中配置的家庭 Wi‑Fi SSID 不相同。",
+  "action_description": "当条件成立时执行：1) 立即对以下灯实体执行 light.turn_off：light.philips_cn_1061200910_lite_s_2, light.yeelink_cn_1162511951_mbulb3_s_2；2) 等待 2 秒；3) 对上述灯实体执行 light.turn_on。"
+}
+
+当前观测状态（供参考）：
+- 网关当前 SSID（来自 sensor.lumi_cn_551385025_mcn001_wifi_ssid_p_2_3）："shuashua"
+- 系统中未发现可用于比对的已配置家庭 SSID（因此现在不会立即触发动作）。我已注册好当条件成立时要执行的操作；届时系统会自动把指定的灯先关再开。
+2025-11-05 10:34:22,327 - INFO - [test_entry:process_testcases:175] - {'累计输入 token': 1112206, '累计输出 token': 126255, '累计总 token': 1238461}
+2025-11-05 10:34:22,328 - INFO - [test_entry:process_testcases:177] - 
+Agent运行一次的资源统计结果：
+2025-11-05 10:34:22,328 - INFO - [test_entry:process_testcases:178] - 总运行时间：190.62秒
+2025-11-05 10:34:22,328 - INFO - [test_entry:process_testcases:179] - 内存峰值：111.92MB
+2025-11-05 10:34:22,328 - INFO - [test_entry:process_testcases:180] - 内存平均值：109.86MB
+2025-11-05 10:34:22,328 - INFO - [test_entry:process_testcases:181] - CPU使用率峰值：42.60%
+2025-11-05 10:34:22,328 - INFO - [test_entry:process_testcases:182] - CPU使用率平均值：0.19%
+2025-11-05 10:34:22,328 - INFO - [devices_init:execute:22] - 
+请求的body:
+{"entity_id": "light.yeelink_cn_1162511951_mbulb3_s_2"}
+2025-11-05 10:34:22,542 - INFO - [devices_init:execute:22] - 
+请求的body:
+{"entity_id": "light.philips_cn_1061200910_lite_s_2"}
