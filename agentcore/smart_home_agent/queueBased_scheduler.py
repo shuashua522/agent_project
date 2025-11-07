@@ -482,7 +482,11 @@ def generateTaskToQueueTool(
         "condition_func_name": condition_func_name,
         "time_ruler": time_ruler
     }
-
+    import agent_project.agentcore.config.global_config as global_config
+    active_project_env = global_config.ACTIVE_PROJECT_ENV
+    if active_project_env=="dev":
+        global_config.GLOBAL_AGENT_DETAILED_LOGGER.info(params_dict)
+        return "成功添加到定时任务队列"
     # 过滤掉值为None或空字符串的键
     filtered_params = {
         key: value for key, value in params_dict.items()

@@ -123,7 +123,7 @@ def process_testcases(agent_name,dir_path=testing_logs_dir,testNums=1):
     # 遍历测试用例
     from test_cases import init_devices
     for index, func in enumerate(init_devices.registered_functions):
-        if(index+1<=4):
+        if(index+1<=7 or index+1>=30):
             continue
         question=func()
 
@@ -154,6 +154,10 @@ def process_testcases(agent_name,dir_path=testing_logs_dir,testNums=1):
                 SageAgent().run_agent(question)
             elif agent_name=="ourAgent" or agent_name=="privacyAgent":
                 # SmartHomeAgent().run_agent(question)
+                file_path = r"F:\PyCharm\langchain_test\agent_project\agentcore\smart_home_agent\generate_conditional_code\condtional_code.py"
+                # 以写入模式（'w'）打开文件，该模式会自动清空文件原有内容
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    pass
                 privacy_home_agent(question)
         except Exception as e:
             # 1. 获取完整的异常信息（类型、消息、堆栈跟踪）
@@ -187,7 +191,7 @@ def main(agent_name,testNums):
 
 if __name__=="__main__":
     # main("singleAgent",1)
-    # main("sashaAgent",1)
+    main("sashaAgent",1)
     # main("sageAgent",1)
-    main("privacyAgent",1)
+    # main("privacyAgent",1)
     pass

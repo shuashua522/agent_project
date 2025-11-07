@@ -186,4 +186,4 @@ def disable_test_memory():
     :return:
     """
     import agent_project.agentcore.config.global_config as global_config
-    global_config.ENABLE_MEMORY_FOR_TEST = True;
+    global_config.ENABLE_MEMORY_FOR_TEST = False;

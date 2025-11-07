@@ -166,7 +166,7 @@ def turn_on_light_when_person_passes():
 # 2. 当音箱关闭时，打开台灯
 @init_devices(lambda:disable_test_memory(),lambda:case_01_env())
 def turn_on_desk_lamp_when_speaker_off():
-    return "当插座关闭时，打开台灯"
+    return "当音箱关闭时，打开台灯"
 
 # 3. 天黑时，如果窗户没关，告诉我。
 @init_devices(lambda:disable_test_memory(),lambda:case_01_env())

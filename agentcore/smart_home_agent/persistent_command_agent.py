@@ -53,6 +53,9 @@ class GenerateConditionCode(BaseToolAgent):
             - 必须添加文档注释符说明函数用途
 
             **生成代码后，调用@tool save_func_code_to_file将其保存到本地函数库中**
+            - 只要调用@tool save_func_code_to_file没有报错，就是保存成功
+            - 不要反复调用@tool save_func_code_to_file，
+            - 保存到函数库里，该结束就结束，不要多次写代码，然后调用@tool save_func_code_to_file，
             
             最后！！！！>>>返回格式：仅返回纯Python代码！！！
             """.format(func_name="func"+uuid_str)

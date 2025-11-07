@@ -173,13 +173,14 @@ def execute_domain_service_by_entity_id(
         service: Annotated[str, "通过调用工具@get_services_by_domain获取对应domain下的所有的services，从中选择需要执行的服务"],
         body: Annotated[str, """'Content-Type': 'application/json'。请求体至少包含'entity_id'(body中有且仅能出现一个entity_id)，如果service还需要其他的参数，请补足。
                              通过调用工具@get_all_entity_id可以获取所有的entity_id，从中选择所需的entity_id进行操作。"""],
-    ) -> Union[Dict, List]:
+    ) :
     """
     Calls a service within a specific domain. Will return when the service has been executed.
 
     由于智能家居的数据已经进行加密处理(加密后的数据形如：@xxx@)，如果你需要对传入body中的某些加密数据进行算术运算。你可以用在其前后加入算术运算，例如：
     {"entity_id": "@nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@", "brightness_pct": @n+4XiEGjo3K4qp1+WdooLw==:E034U68+xYq6U47e5i/isA==@*5-4}
 
+    该函数没有返回值，可能返回null，只要没有报错，即可视为执行过程没有问题
     """
 
     body=jsonBodyDecodeAndCalc(body)
@@ -245,6 +246,7 @@ class DeviceInteractionAgent(BaseToolAgent):
                     根据用户的指定，调用提供的工具来获取设备状态或者操作设备
                     - 因为部分数据涉及隐私，所以你获取的数据可能已被加密，加密后的格式形如@xxx@，具体例子：@nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@
                     - 如果你要使用这些加密数据，请保留完整格式
+                    - 值得注意的是工具@execute_domain_service_by_entity_id不支持并行调用，所以工具@execute_domain_service_by_entity_id只能调用等结果返回后再接着调用
                     """
         system_message = {
             "role": "system",

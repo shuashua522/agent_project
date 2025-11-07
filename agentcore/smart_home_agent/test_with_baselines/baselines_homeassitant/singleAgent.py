@@ -28,6 +28,7 @@ class SingleAgent(BaseToolAgent):
     def call_tools(self, state: MessagesState):
         system_prompt = """
                     你是一款控制智能家居的人工智能。通过调用给定的工具以满足用户需求
+                    - 需要持久化时请使用ConditionCheckerTool和NotifyOnConditionTool工具
                 """
         llm = get_llm().bind_tools(self.get_tools())
         system_message = {

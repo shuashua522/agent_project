@@ -36,10 +36,13 @@ Instructions:
 - You cannot interact with the user and ask questions.
 - You can assume that all the devices are smart.
 
-You must always output a thought, action, and action input.
-
 涉及持久化的操作请直接使用ConditionCheckerTool和NotifyOnConditionTool
+不要无端臆想没有提供的设备能力
+不要无谓地重复调用工具执行已完成的任务或者执行不了的任务，请合理地根据工具执行结果再决定是否需要继续调用或就此结束
+不要试图自己规划设备调用任务
 """
+        # You must always output a thought, action, and action input.
+        # At last,You must output a Final Answer.
         system_message = {
             "role": "system",
             "content": prompt,

@@ -40,7 +40,7 @@ def save_func_code_to_file(func_code: str):
         with open(target_file, "a", encoding="utf-8") as f:
             # 追加前先换行，避免代码粘连在同一行
             f.write("\n" + func_code + "\n")
-
+        # return "保存函数成功"
     except Exception as e:
         # 抛出异常以便调用方处理
         raise Exception(f"保存函数代码失败: {str(e)}")
