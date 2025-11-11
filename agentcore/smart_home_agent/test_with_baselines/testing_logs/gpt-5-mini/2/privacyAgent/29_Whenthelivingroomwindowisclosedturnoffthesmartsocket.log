@@ -1,0 +1,109 @@
+2025-11-10 18:30:56,475 - INFO - [base_agent:run_agent:93] - ================================ Human Message =================================
+
+When the living room window is closed, turn off the smart socket.
+2025-11-10 18:31:07,121 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  persistentCommandTool (call_LVlnsojVpSdLqFbb9zM47fvp)
+ Call ID: call_LVlnsojVpSdLqFbb9zM47fvp
+  Args:
+    task: Monitor the living room window sensor; when its state becomes 'closed', turn off the smart socket. If the socket is already off, do nothing.
+2025-11-10 18:31:07,127 - INFO - [base_agent:run_agent:93] - ================================ Human Message =================================
+
+Monitor the living room window sensor; when its state becomes 'closed', turn off the smart socket. If the socket is already off, do nothing.
+2025-11-10 18:31:27,563 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  generateTaskToQueueTool (call_jY030nQXjVtsSy1uxWuj8LS5)
+ Call ID: call_jY030nQXjVtsSy1uxWuj8LS5
+  Args:
+    task_desc: Monitor living room window and turn off socket when window closed
+    action_statement: turn off the living room smart socket via the smart home API (do nothing if it's already off)
+    condition_func_code: def is_living_room_window_closed_and_socket_on(context):
+    """
+    context: dict-like object expected to contain:
+      - 'window_sensor_state': string ('open'/'closed')
+      - 'socket_state': string ('on'/'off') or boolean
+    Returns True if window is 'closed' (case-insensitive) AND socket is on.
+    """
+    try:
+        s = str(context.get('window_sensor_state','')).strip().lower()
+        sock = context.get('socket_state', '')
+        if isinstance(sock, str):
+            sock_state = sock.strip().lower()
+            socket_on = sock_state in ('on','true','1')
+        else:
+            socket_on = bool(sock)
+        return s == 'closed' and socket_on
+    except Exception:
+        return False
+
+    condition_func_name: is_living_room_window_closed_and_socket_on
+    time_ruler: check every 5 seconds
+2025-11-10 18:31:27,565 - INFO - [queueBased_scheduler:generateTaskToQueueTool:488] - {'task_desc': 'Monitor living room window and turn off socket when window closed', 'action_statement': "turn off the living room smart socket via the smart home API (do nothing if it's already off)", 'condition_func_code': 'def is_living_room_window_closed_and_socket_on(context):\n    """\n    context: dict-like object expected to contain:\n      - \'window_sensor_state\': string (\'open\'/\'closed\')\n      - \'socket_state\': string (\'on\'/\'off\') or boolean\n    Returns True if window is \'closed\' (case-insensitive) AND socket is on.\n    """\n    try:\n        s = str(context.get(\'window_sensor_state\',\'\')).strip().lower()\n        sock = context.get(\'socket_state\', \'\')\n        if isinstance(sock, str):\n            sock_state = sock.strip().lower()\n            socket_on = sock_state in (\'on\',\'true\',\'1\')\n        else:\n            socket_on = bool(sock)\n        return s == \'closed\' and socket_on\n    except Exception:\n        return False\n', 'condition_func_name': 'is_living_room_window_closed_and_socket_on', 'time_ruler': 'check every 5 seconds'}
+2025-11-10 18:31:27,565 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: generateTaskToQueueTool
+
+Successfully added to the scheduled task queue
+2025-11-10 18:31:36,966 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+
+Done — I scheduled a persistent task to monitor the living room window and turn off the smart socket when the window becomes "closed".
+
+Summary of what I enqueued
+- Task description: Monitor living room window and turn off socket when window closed.
+- Action: Turn off the living room smart socket via the smart home API (no-op if it's already off).
+- Trigger check interval: every 5 seconds.
+- Condition: only execute the action when the window sensor state is "closed" and the socket is currently on.
+
+Condition function (used to decide whether to run the action)
+- Function name: is_living_room_window_closed_and_socket_on
+- What it expects in the runtime context: a dict-like object containing
+  - window_sensor_state: string such as "open" or "closed"
+  - socket_state: string "on"/"off" or boolean
+- Behavior: returns True only when window_sensor_state == "closed" (case-insensitive) AND socket_state indicates the socket is on.
+
+Notes and next steps
+- The task will only attempt to turn off the socket when the condition function returns True, so if the socket is already off nothing will be done.
+- For this to work the monitoring system that runs tasks must supply the current window_sensor_state and socket_state values from your devices. If you need, I can help wire up or describe the API calls needed to fetch those values and to turn the socket off.
+- Want any changes? You can ask me to change the check interval, the condition logic, the action, or to stop/cancel the task.
+2025-11-10 18:31:36,970 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: persistentCommandTool
+
+Done — I scheduled a persistent task to monitor the living room window and turn off the smart socket when the window becomes "closed".
+
+Summary of what I enqueued
+- Task description: Monitor living room window and turn off socket when window closed.
+- Action: Turn off the living room smart socket via the smart home API (no-op if it's already off).
+- Trigger check interval: every 5 seconds.
+- Condition: only execute the action when the window sensor state is "closed" and the socket is currently on.
+
+Condition function (used to decide whether to run the action)
+- Function name: is_living_room_window_closed_and_socket_on
+- What it expects in the runtime context: a dict-like object containing
+  - window_sensor_state: string such as "open" or "closed"
+  - socket_state: string "on"/"off" or boolean
+- Behavior: returns True only when window_sensor_state == "closed" (case-insensitive) AND socket_state indicates the socket is on.
+
+Notes and next steps
+- The task will only attempt to turn off the socket when the condition function returns True, so if the socket is already off nothing will be done.
+- For this to work the monitoring system that runs tasks must supply the current window_sensor_state and socket_state values from your devices. If you need, I can help wire up or describe the API calls needed to fetch those values and to turn the socket off.
+- Want any changes? You can ask me to change the check interval, the condition logic, the action, or to stop/cancel the task.
+2025-11-10 18:31:43,152 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+
+Done. I set up a persistent monitor that checks the living room window and the smart socket and will turn the socket off when the window becomes "closed."
+
+Summary:
+- Trigger: living room window sensor state == "closed"
+- Condition: socket is currently on
+- Action: turn off the living room smart socket (no-op if already off)
+- Check interval: every 5 seconds
+
+If you want the interval, condition, or action changed, or want the task stopped, tell me the change and I will update it.
+2025-11-10 18:31:45,025 - INFO - [smart_home_agent_entry:privacy_home_agent:81] - 整理文本结果:
+When the living room window is closed, turn off the smart socket.
+2025-11-10 18:31:45,056 - INFO - [test_entry:process_testcases:181] - {'累计输入 token': 8521802, '累计输出 token': 343883, '累计总 token': 8865685}
+2025-11-10 18:31:45,056 - INFO - [test_entry:process_testcases:183] - 
+Agent运行一次的资源统计结果：
+2025-11-10 18:31:45,056 - INFO - [test_entry:process_testcases:184] - 总运行时间：48.59秒
+2025-11-10 18:31:45,056 - INFO - [test_entry:process_testcases:185] - 内存峰值：123.32MB
+2025-11-10 18:31:45,056 - INFO - [test_entry:process_testcases:186] - 内存平均值：122.42MB
+2025-11-10 18:31:45,056 - INFO - [test_entry:process_testcases:187] - CPU使用率峰值：42.60%
+2025-11-10 18:31:45,056 - INFO - [test_entry:process_testcases:188] - CPU使用率平均值：0.29%

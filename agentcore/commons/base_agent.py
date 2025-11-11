@@ -54,7 +54,7 @@ class BaseToolAgent(ABC):
 
         # 编译图为可运行的代理
         agent = builder.compile()
-        # agent = agent.with_config({"recursion_limit": 5})
+        agent = agent.with_config({"recursion_limit": 17})
         return agent
     def run_agent(self,problem,):
         agent=self.create_agent()

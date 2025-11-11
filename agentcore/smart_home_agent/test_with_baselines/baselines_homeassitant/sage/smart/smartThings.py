@@ -15,6 +15,10 @@ from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm
 from agent_project.agentcore.config.global_config import HOMEASSITANT_AUTHORIZATION_TOKEN, HOMEASSITANT_SERVER, \
     ACTIVE_PROJECT_ENV, PRIVACYHANDLER
+from agent_project.agentcore.smart_home_agent.fake_request.fake_do_service import \
+    fake_execute_domain_service_by_entity_id
+from agent_project.agentcore.smart_home_agent.fake_request.fake_get_entity import fake_get_all_entities, \
+    fake_get_services_by_domain, fake_get_states_by_entity_id
 from agent_project.agentcore.smart_home_agent.privacy_handler import RequestBodyDecodeAgent, replace_encoded_text, \
     jsonBodyDecodeAndCalc
 from agent_project.agentcore.smart_home_agent.test_with_baselines.baselines_homeassitant.sage.smart.device_doc import \
@@ -76,7 +80,7 @@ def get_all_entity_id() -> Union[Dict, List]:
     Each state has the following attributes: entity_id, state, last_changed and attributes.
     """
     result = None
-    if active_project_env == "dev":
+    if active_project_env == "pro":
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
@@ -90,7 +94,8 @@ def get_all_entity_id() -> Union[Dict, List]:
         response.raise_for_status()
         # 返回JSON响应内容
         result = response.json()
-
+    elif active_project_env == "dev":
+        result=fake_get_all_entities()
     elif active_project_env == "test":
         file_path = os.path.join(mock_data_dir, 'selected_entities.json')
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -105,7 +110,7 @@ def get_services_by_domain(domain) -> Union[Dict, List]:
     """
     return all services included in the domain.
     """
-    if active_project_env == "dev":
+    if active_project_env == "pro":
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
@@ -126,17 +131,19 @@ def get_services_by_domain(domain) -> Union[Dict, List]:
                 return domain_entry
             # 若未找到目标 domain，返回空字典
         return {}
+    elif active_project_env == "dev":
+        return fake_get_services_by_domain(domain)
 
 
 @tool
-def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状态"], ) -> Union[Dict, List]:
+def get_states_by_entity_id(entity_id: Annotated[str, "check the status of {entity_id}"], ) -> Union[Dict, List]:
     """
     Returns a state object for specified entity_id.
     Returns 404 if not found.
     """
 
     result = None
-    if active_project_env == "dev":
+    if active_project_env == "pro":
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
@@ -150,6 +157,8 @@ def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状�
         response.raise_for_status()
         # 返回JSON响应内容
         result = response.json()
+    elif active_project_env == "dev":
+        result=fake_get_states_by_entity_id(entity_id)
     elif active_project_env == "test":
         file_path = os.path.join(mock_data_dir, 'selected_entities.json')
         result = extract_entity_by_id(file_path, entity_id)
@@ -169,16 +178,14 @@ def execute_domain_service_by_entity_id(
     """
     Calls a service within a specific domain. Will return when the service has been executed.
 
-    由于智能家居的数据已经进行加密处理(加密后的数据形如：@xxx@)，如果你需要对传入body中的某些加密数据进行算术运算。你可以用在其前后加入算术运算，例如：
-    {"entity_id": "@nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@", "brightness_pct": @n+4XiEGjo3K4qp1+WdooLw==:E034U68+xYq6U47e5i/isA==@*5-4}
-
+    Returns a list of states that have changed while the service was being executed, and optionally response data, if supported by the service.
     """
     import agent_project.agentcore.config.global_config as global_config
     logger = global_config.GLOBAL_AGENT_DETAILED_LOGGER
     if logger != None:
         logger.info("\n请求的body:\n" + body)
     result = None
-    if active_project_env == "dev":
+    if active_project_env == "pro":
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
@@ -201,6 +208,8 @@ def execute_domain_service_by_entity_id(
         response.raise_for_status()
         # 返回JSON响应
         result = response.json()
+    elif active_project_env == "dev":
+        result=fake_execute_domain_service_by_entity_id(domain,service,body)
 
     return result
 

@@ -170,15 +170,14 @@ def jsonBodyDecodeAndCalc(body:str):
     ).get_format_instructions()
 
     system_prompt = f"""
-    {body}
-    如果上面这段json中的内容涉及算术运算，那么你需要手动计算其中的数学运算！否则，直接返回原本的json字符串
-    - 直接返回一个json字符串
-    - 最后返回的字符串的结构需要与原字符串保持一致
-    - 不要写python代码
-            
-            
-    {format_instructions}
-            """
+        {body}
+        If the content in the above json involves arithmetic operations, you need to manually calculate the mathematical operations! Otherwise, return the original json string directly
+        - Return a json string directly
+        - The structure of the final returned string must be consistent with the original string
+        - Do not write python code
+
+        {format_instructions}
+                """
     system_message = {
         "role": "user",
         "content": system_prompt,

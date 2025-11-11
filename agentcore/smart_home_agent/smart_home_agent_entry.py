@@ -19,15 +19,24 @@ class SmartHomeAgent(BaseToolAgent):
         return tools
 
     def call_tools(self, state: MessagesState):
+        # system_prompt = """
+        #     你是一名智能家居助手，调用工具以满足用户需求。
+        #     - 不要向用户提问
+        #     - 需要注意的是由于智能家居中的一些数据已经进行隐私处理，数据会被加密。
+        #     - 因此，如果调用工具后的结果包含加密文本，你需要保留可能会用到的加密数据，后续我会进一步处理的。
+        #     - 除了加密数据，你不能使用@符号
+        #     - 在不清楚有什么设备前，禁止随意计划、无中生有。
+        #     - 调用持久化的工具只需说清楚当xx设备处于xx状态时，就做什么。不需要提供任何加密数据
+        # """
         system_prompt = """
-            你是一名智能家居助手，调用工具以满足用户需求。
-            - 不要向用户提问
-            - 需要注意的是由于智能家居中的一些数据已经进行隐私处理，数据会被加密。
-            - 因此，如果调用工具后的结果包含加密文本，你需要保留可能会用到的加密数据，后续我会进一步处理的。
-            - 除了加密数据，你不能使用@符号
-            - 在不清楚有什么设备前，禁止随意计划、无中生有。
-            - 调用持久化的工具只需说清楚当xx设备处于xx状态时，就做什么。不需要提供任何加密数据
-        """
+                    You are a smart home assistant, call tools to meet user needs.
+                    - Do not ask users questions
+                    - It should be noted that some data in the smart home has been privacy-processed and will be encrypted.
+                    - Therefore, if the result after calling the tool contains encrypted text, you need to retain the encrypted data that may be used; I will further process it later.
+                    - Except for encrypted data, you cannot use the @ symbol
+                    - Before knowing which devices are available, it is forbidden to make arbitrary plans or fabricate non-existent things.
+                    - When calling persistent tools, you only need to clearly state what to do when a certain device is in a certain state. No need to provide any encrypted data
+                """
         llm = get_llm().bind_tools(self.get_tools())
         system_message = {
             "role": "system",
@@ -58,9 +67,9 @@ def smart_home_agent_tool(problem:str):
 def privacy_home_agent(problem:str):
     encode_str = SmartHomeAgent().run_agent(problem)
     decode_str = replace_encoded_text(encode_str)
-    system_prompt = f"""根据参考信息，回答用户问题
-            【问题】：{problem}
-            【参考信息】：{decode_str}"""
+    system_prompt = f"""Answer the user's question based on the reference information
+                【Question】：{problem}
+                【Reference Information】：{decode_str}"""
     system_message = {
         "role": "system",
         "content": system_prompt,

@@ -15,6 +15,10 @@ from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm
 from agent_project.agentcore.config.global_config import HOMEASSITANT_AUTHORIZATION_TOKEN, HOMEASSITANT_SERVER, \
     ACTIVE_PROJECT_ENV, PRIVACYHANDLER
+from agent_project.agentcore.smart_home_agent.fake_request.fake_do_service import \
+    fake_execute_domain_service_by_entity_id, bad_request
+from agent_project.agentcore.smart_home_agent.fake_request.fake_get_entity import fake_get_all_entities, \
+    fake_get_services_by_domain, fake_get_states_by_entity_id
 from agent_project.agentcore.smart_home_agent.privacy_handler import RequestBodyDecodeAgent, replace_encoded_text, \
     jsonBodyDecodeAndCalc
 
@@ -88,7 +92,7 @@ def get_all_entity_id()-> Union[Dict, List]:
     Each state has the following attributes: entity_id, state, last_changed and attributes.
     """
     result=None
-    if active_project_env=="dev":
+    if active_project_env=="pro":
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
@@ -102,7 +106,8 @@ def get_all_entity_id()-> Union[Dict, List]:
         response.raise_for_status()
         # 返回JSON响应内容
         result=response.json()
-
+    elif active_project_env == "dev":
+        result=fake_get_all_entities()
     elif active_project_env=="test":
         file_path=os.path.join(mock_data_dir, 'selected_entities.json')
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -115,7 +120,7 @@ def get_services_by_domain(domain) -> Union[Dict, List]:
     """
     return all services included in the domain.
     """
-    if active_project_env == "dev":
+    if active_project_env == "pro":
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
@@ -136,9 +141,11 @@ def get_services_by_domain(domain) -> Union[Dict, List]:
                 return domain_entry
             # 若未找到目标 domain，返回空字典
         return {}
+    elif active_project_env == "dev":
+        return fake_get_services_by_domain(domain)
 
 @tool
-def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状态"],) -> Union[Dict, List]:
+def get_states_by_entity_id(entity_id: Annotated[str, "check the status of {entity_id}"],) -> Union[Dict, List]:
     """
     Returns a state object for specified entity_id.
     Returns 404 if not found.
@@ -147,7 +154,7 @@ def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状�
     entity_id=replace_encoded_text(entity_id)
 
     result=None
-    if active_project_env == "dev":
+    if active_project_env == "pro":
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
@@ -161,6 +168,8 @@ def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状�
         response.raise_for_status()
         # 返回JSON响应内容
         result=response.json()
+    elif active_project_env == "dev":
+        result=fake_get_states_by_entity_id(entity_id)
     elif active_project_env == "test":
         file_path = os.path.join(mock_data_dir, 'selected_entities.json')
         result=extract_entity_by_id(file_path,entity_id)
@@ -169,19 +178,22 @@ def get_states_by_entity_id(entity_id: Annotated[str, "查看{entity_id}的状�
 
 @tool
 def execute_domain_service_by_entity_id(
-        domain: Annotated[str, "entity_id的前缀即为对应的domain，比如某一entity_id为switch.cuco_cn_269067598_cp1_on_p_2_1，其domain即为switch"],
-        service: Annotated[str, "通过调用工具@get_services_by_domain获取对应domain下的所有的services，从中选择需要执行的服务"],
-        body: Annotated[str, """'Content-Type': 'application/json'。请求体至少包含'entity_id'(body中有且仅能出现一个entity_id)，如果service还需要其他的参数，请补足。
-                             通过调用工具@get_all_entity_id可以获取所有的entity_id，从中选择所需的entity_id进行操作。"""],
+        domain: Annotated[
+            str, "The prefix of entity_id is the corresponding domain. For example, if an entity_id is switch.cuco_cn_269067598_cp1_on_p_2_1, its domain is switch"],
+        service: Annotated[
+            str, "Obtain all services under the corresponding domain by calling the tool @get_services_by_domain, and select the service that needs to be executed from them"],
+        body: Annotated[str, """'Content-Type': 'application/json'. The request body must contain at least 'entity_id' (the body can contain exactly one entity_id). If the service requires other parameters, please supplement them.
+                                     All entity_ids can be obtained by calling the tool @get_all_entity_id, and the required entity_id can be selected from them for operation."""]
     ) :
     """
-    Calls a service within a specific domain. Will return when the service has been executed.
+        Calls a service within a specific domain. Will return when the service has been executed.
 
-    由于智能家居的数据已经进行加密处理(加密后的数据形如：@xxx@)，如果你需要对传入body中的某些加密数据进行算术运算。你可以用在其前后加入算术运算，例如：
-    {"entity_id": "@nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@", "brightness_pct": @n+4XiEGjo3K4qp1+WdooLw==:E034U68+xYq6U47e5i/isA==@*5-4}
+        Since the data of smart home has been encrypted (the encrypted data is in the form of: @xxx@), if you need to perform arithmetic operations on certain encrypted data passed into the body.
+        You can add arithmetic operations before and after it, for example:
+        {"entity_id": "@nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@", "brightness_pct": @n+4XiEGjo3K4qp1+WdooLw==:E034U68+xYq6U47e5i/isA==@*5-4}
 
-    该函数没有返回值，可能返回null，只要没有报错，即可视为执行过程没有问题
-    """
+        This function has no return value and may return null. As long as there is no error, the execution process can be regarded as problem-free.
+        """
 
     body=jsonBodyDecodeAndCalc(body)
     import agent_project.agentcore.config.global_config as global_config
@@ -189,7 +201,7 @@ def execute_domain_service_by_entity_id(
     if logger != None:
         logger.info("\n请求的body:\n"+body)
     result=None
-    if active_project_env == "dev":
+    if active_project_env == "pro":
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
@@ -212,7 +224,10 @@ def execute_domain_service_by_entity_id(
         response.raise_for_status()
         # 返回JSON响应
         result= response.json()
-
+    elif active_project_env == "dev":
+        result=fake_execute_domain_service_by_entity_id(domain,service,body)
+    if result==bad_request:
+        return result
     # return result
 
 def tools_test():
@@ -242,11 +257,17 @@ class DeviceInteractionAgent(BaseToolAgent):
 
     def call_tools(self, state: MessagesState):
         llm = get_llm().bind_tools(self.get_tools())
-        prompt = f"""
-                    根据用户的指定，调用提供的工具来获取设备状态或者操作设备
-                    - 因为部分数据涉及隐私，所以你获取的数据可能已被加密，加密后的格式形如@xxx@，具体例子：@nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@
-                    - 如果你要使用这些加密数据，请保留完整格式
-                    - 值得注意的是工具@execute_domain_service_by_entity_id不支持并行调用，所以工具@execute_domain_service_by_entity_id只能调用等结果返回后再接着调用
+        # prompt = f"""
+        #             根据用户的指定，调用提供的工具来获取设备状态或者操作设备
+        #             - 因为部分数据涉及隐私，所以你获取的数据可能已被加密，加密后的格式形如@xxx@，具体例子：@nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@
+        #             - 如果你要使用这些加密数据，请保留完整格式
+        #             - 值得注意的是工具@execute_domain_service_by_entity_id不支持并行调用，所以工具@execute_domain_service_by_entity_id只能调用等结果返回后再接着调用
+        #             """
+        prompt =f"""
+                    According to the user's specification, call the provided tools to obtain device status or operate devices
+                    - Since some data involves privacy, the data you obtain may have been encrypted. The encrypted format is like @xxx@, specific example: @nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@
+                    - If you need to use this encrypted data, please retain the complete format
+                    - It is worth noting that the tool @execute_domain_service_by_entity_id does not support parallel calls, so the tool @execute_domain_service_by_entity_id can only be called after the result of the previous call is returned
                     """
         system_message = {
             "role": "system",
@@ -256,15 +277,15 @@ class DeviceInteractionAgent(BaseToolAgent):
         return {"messages": [response]}
 
 @tool
-def deviceInteractionTool(task: Annotated[str, "与智能家居设备交互的自然语言描述"])->str:
+def deviceInteractionTool(task: Annotated[str, "Natural language description for interacting with smart home devices"])->str:
     """
-        能够根据任务描述，获取设备状态或者操作设备
-        :示例1:
-            task="关闭插座":
-        :示例2:
-            task="获取当前光照强度"
+    Can obtain device status or operate devices based on task descriptions
+    :Example 1:
+        task="turn off the socket":
+    :Example 2:
+        task="get the current light intensity"
 
-    """
+        """
     return DeviceInteractionAgent().run_agent(task)
 # func("门窗关了没")
 # func("现在光照如何？")

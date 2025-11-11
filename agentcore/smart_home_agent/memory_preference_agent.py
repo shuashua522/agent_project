@@ -28,10 +28,12 @@ def save_preference(preference_str: str) -> str:
 
     return f"已记住用户偏好：{preference_str}"
 
-test_preferences_str = "把灯泡和音箱分组为 “氛围” 组；记住我喜欢客厅灯是 30% 亮度；台灯太亮了，亮度调到 20% 就行；哦，睡觉时，我不喜欢黑暗的环境，这会让我害怕；还是放周杰伦的歌吧，这是我最喜欢的；我接电话时，不要让设备发出声音；哦，我房间里有卫生间；看书时，我喜欢在客厅的沙发上看，因为累了，看看客厅的植物能让我心情放松；家里的插座没有我的明确指令不能关，上面连了我的服务器；客厅灯 3000k 是让我感觉最好；我喜欢关于动物和孩子的温暖治愈故事；网关的 wifi 目前连的是我的热点（dddiu）; 你知道什么场景最吓人吗？灯一闪一闪的，然后还有恐怖背景音；准备睡前我会玩会手机，这时灯设成渐灭，30 分钟后熄灭。; 周日，我一般天亮就起；暑假的时候，我晚上都会睡在客厅沙发，然后把窗户打开，这样睡得很香。; 我一般 11 点睡觉，7 点多起床；天气好的时候，窗户要打开通风哦"
+# test_preferences_str = "把灯泡和音箱分组为 “氛围” 组；记住我喜欢客厅灯是 30% 亮度；台灯太亮了，亮度调到 20% 就行；哦，睡觉时，我不喜欢黑暗的环境，这会让我害怕；还是放周杰伦的歌吧，这是我最喜欢的；我接电话时，不要让设备发出声音；哦，我房间里有卫生间；看书时，我喜欢在客厅的沙发上看，因为累了，看看客厅的植物能让我心情放松；家里的插座没有我的明确指令不能关，上面连了我的服务器；客厅灯 3000k 是让我感觉最好；我喜欢关于动物和孩子的温暖治愈故事；网关的 wifi 目前连的是我的热点（dddiu）; 你知道什么场景最吓人吗？灯一闪一闪的，然后还有恐怖背景音；准备睡前我会玩会手机，这时灯设成渐灭，30 分钟后熄灭。; 周日，我一般天亮就起；暑假的时候，我晚上都会睡在客厅沙发，然后把窗户打开，这样睡得很香。; 我一般 11 点睡觉，7 点多起床；天气好的时候，窗户要打开通风哦"
+test_preferences_str = "Group the light bulbs and speakers into the 'Atmosphere' group; Remember that I prefer the living room light to be at 30% brightness; The desk lamp is too bright—adjusting its brightness to 20% is sufficient; Oh, when sleeping, I don't like a dark environment as it scares me; Let's play Jay Chou's songs instead—they are my favorite; When I'm on a call, don't let the devices make noise; Oh, there is a bathroom in my room; When reading, I like to sit on the living room sofa because when I'm tired, looking at the living room plants helps me relax; Do not turn off the home sockets without my explicit instruction—they are connected to my server; The living room light at 3000K makes me feel the most comfortable; I like warm and healing stories about animals and children; The gateway's WiFi is currently connected to my hotspot (dddiu); Do you know what the scariest scenario is? Lights flickering with scary background music; Before going to bed, I will play with my phone for a while—set the lights to fade out and turn off after 30 minutes; On Sundays, I usually get up at dawn; During summer vacation, I sleep on the living room sofa every night and keep the windows open, which makes me sleep soundly; I usually go to bed at 11 PM and get up around 7 AM; When the weather is nice, open the windows for ventilation"
+
 @tool
 def get_preference() -> str:
-    """从记忆中获取用户的所有设备使用偏好"""
+    """Retrieve all the user's device usage preferences from memory"""
     import agent_project.agentcore.config.global_config as global_config
     if(global_config.ENABLE_MEMORY_FOR_TEST):
         store.put(
@@ -50,9 +52,9 @@ def get_preference() -> str:
         key="preference"
     )
     if saved_preference:
-        return f"偏好是：{saved_preference.value}"
+        return f"Preferences are: {saved_preference.value}"
     else:
-        return "还没记录偏好"
+        return "No preferences have been recorded yet"
 
 class PreferenceAgent(BaseToolAgent):
     def __init__(self):
@@ -65,9 +67,9 @@ class PreferenceAgent(BaseToolAgent):
 
     def call_tools(self, state: MessagesState):
         system_prompt = """
-                   你需要从记忆库中找到与用户提问相关的偏好信息，并返回。
-                   - 有可能记忆库中还没有用户相关的任何偏好信息，这时你需要告知用户暂时没有相关信息
-               """
+                           You need to find preference information related to the user's question from the memory database and return it.
+                           - It is possible that the memory database does not yet have any preference information related to the user; in this case, you need to inform the user that there is no relevant information temporarily.
+                       """
         llm = get_llm().bind_tools(self.get_tools())
         system_message = {
             "role": "system",
@@ -80,9 +82,9 @@ class PreferenceAgent(BaseToolAgent):
 @tool
 def memory_tool(query:str):
     """
-    从记忆中查找信息，有助于理解用户的模糊指令。
-    也可能记忆中暂未存储用户相关信息，这时你需要自行决定最佳方案。
-    """
+        Retrieve information from memory, which helps understand the user's vague instructions.
+        It is also possible that the memory does not temporarily store user-related information; in this case, you need to decide the best plan on your own.
+        """
     return PreferenceAgent().run_agent(query)
 
 if __name__ == "__main__":

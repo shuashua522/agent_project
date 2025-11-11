@@ -12,13 +12,13 @@ from agent_project.agentcore.commons.utils import get_llm
 @tool
 def save_func_code_to_file(func_code: str):
     """
-    将python函数字符串{func_code}保存到函数库中
+        Save the Python function string {func_code} to the function library
 
-    参数:
-        func_code: 包含函数定义的字符串
+        Parameters:
+            func_code: A string containing the function definition
 
-    注意：只要没有抛出异常，即可视为成功保存到函数库中
-    """
+        Note: As long as no exception is thrown, it can be considered successfully saved to the function library
+        """
     # 创建一个字典来存储动态执行的代码中的对象
     global_namespace = {}
     # 执行函数代码字符串
@@ -43,13 +43,13 @@ def save_func_code_to_file(func_code: str):
         # return "保存函数成功"
     except Exception as e:
         # 抛出异常以便调用方处理
-        raise Exception(f"保存函数代码失败: {str(e)}")
+        raise Exception(f"Failed to save function code: {str(e)}")
 
 @tool
 def load_funcs_from_file():
     """
-    加载所有本地函数的函数名及其文档字符串说明的函数用途，返回json字符串.
-    如果本地函数库没有，则不会返回函数字符串，可能返回None或{}或...
+    Load the function names of all local functions and their docstrings that describe the functions' purposes, and return a JSON string.
+    If there are no functions in the local function library, no function string will be returned; it may return None, {}, or ...
     """
     # 构建文件路径
     current_dir = Path(__file__).resolve().parent
@@ -78,13 +78,13 @@ def load_funcs_from_file():
         return json.dumps(functions_info, ensure_ascii=False, indent=2)
 
     except Exception as e:
-        raise Exception(f"加载函数信息失败: {str(e)}")
+        raise Exception(f"Failed to load function information: {str(e)}")
 
 @tool
 def load_func_code_from_file(func_name: str):
     """
-    加载本地函数库中函数名为{func_name}的函数，返回其对应的函数字符串;
-    """
+        Load the function named {func_name} from the local function library and return its corresponding function string;
+        """
     # 构建文件路径
     current_dir = Path(__file__).resolve().parent
     target_file = current_dir / "generate_conditional_code" / "condtional_code.py"
@@ -117,13 +117,13 @@ def load_func_code_from_file(func_name: str):
                 func_code.append(line)
 
         if not func_code:
-            raise Exception(f"未找到函数 {func_name}")
+            raise Exception(f"Function not found: {func_name}")
 
         # 合并函数代码并清理空行
         return ''.join(func_code).strip() + '\n'
 
     except Exception as e:
-        raise Exception(f"加载函数代码失败: {str(e)}")
+        raise Exception(f"Failed to load function code: {str(e)}")
 
 class Search_local_contionalCode_agent(BaseToolAgent):
     def get_tools(self) -> List[Callable]:
@@ -138,12 +138,12 @@ class Search_local_contionalCode_agent(BaseToolAgent):
         llm = get_llm().bind_tools(self.get_tools())
         # 提示词：强制LLM生成规范的BaseTool子类，包含必要属性和方法
         prompt = f"""
-                   基于用户的问题描述，检查本地函数库中是否存在对应的实现；如果存在，返回其对应的函数字符串.
-                   工具调用参考：
-                   1. 先调用@tool load_funcs_from_file查看本地函数库中的所有函数名及其对应的描述
-                        - 如果有描述与用户需求一致，调用工具@tool load_func_code_from_file获取其函数源码字符串，然后return 函数源码字符串 
-                        - 如果没有描述与用户需求一致，直接return "本地函数库没有对应的函数实现"
-       """
+                           Based on the user's problem description, check if there is a corresponding implementation in the local function library; if it exists, return the corresponding function string.
+                           Tool call reference:
+                           1. First call @tool load_funcs_from_file to view all function names and their corresponding descriptions in the local function library
+                                - If any description matches the user's needs, call the tool @tool load_func_code_from_file to get its function source code string, then return the function source code string
+                                - If no description matches the user's needs, directly return "There is no corresponding function implementation in the local function library"
+               """
         system_message = {
             "role": "system",
             "content": prompt,
@@ -152,12 +152,12 @@ class Search_local_contionalCode_agent(BaseToolAgent):
         return {"messages": [response]}
 
 @tool
-def search_local_contionalCode_tool(condition_statement: Annotated[str, "需要检查的条件，自然语言描述;比如卧室的光照是否充足"]):
+def search_local_contionalCode_tool(condition_statement: Annotated[str, "Condition to be checked, described in natural language; e.g., whether the light in the bedroom is sufficient"]):
     """
-    检查本地函数库中是否存在对应的python函数，用于检查条件{condition_statement}是否已满足
-    :return: python函数字符串
-   基于用户的问题描述，检查本地函数库中是否存在对应的实现；如果存在，返回其对应的函数字符串
-   """
+    Check if there is a corresponding Python function in the local function library to verify whether the condition {condition_statement} is met
+    :return: Python function string
+    Based on the user's problem description, check if the corresponding implementation exists in the local function library; if it exists, return the corresponding function string
+    """
     return Search_local_contionalCode_agent().run_agent(condition_statement)
 
 

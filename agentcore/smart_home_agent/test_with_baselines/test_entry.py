@@ -123,7 +123,9 @@ def process_testcases(agent_name,dir_path=testing_logs_dir,testNums=1):
     # 遍历测试用例
     from test_cases import init_devices
     for index, func in enumerate(init_devices.registered_functions):
-        if(index+1<=7 or index+1>=30):
+        # if(index+1<=36):
+        #     continue
+        if(index+1<=23):
             continue
         question=func()
 
@@ -191,7 +193,7 @@ def main(agent_name,testNums):
 
 if __name__=="__main__":
     # main("singleAgent",1)
-    main("sashaAgent",1)
+    # main("sashaAgent",1)
     # main("sageAgent",1)
-    # main("privacyAgent",1)
+    main("privacyAgent",3)
     pass

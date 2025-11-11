@@ -17,6 +17,7 @@ current_dir = os.path.dirname(current_file_path)
 
 
 def get_llm():
+    # max_tokens: int = 1000
     import agent_project.agentcore.config.global_config as global_config
     from agent_project.agentcore.config.global_config import MODEL, BASE_URL, API_KEY, PROXIES, PROVIDER
     provider=PROVIDER
@@ -40,6 +41,7 @@ def get_llm():
                 temperature=0,
                 http_client=httpx_client,
                 callback_manager=CallbackManager([callbackHandler]),
+                # max_tokens=max_tokens  # 配置max_tokens
             )
         else:
             llm = init_chat_model(
@@ -48,7 +50,8 @@ def get_llm():
                 api_key=api_key,
                 base_url=base_url,
                 temperature=0,
-                http_client=httpx_client
+                http_client=httpx_client,
+                # max_tokens=max_tokens  # 配置max_tokens
             )
     else:
         if(callbackHandler):
@@ -59,6 +62,7 @@ def get_llm():
                 base_url=base_url,
                 temperature=0,
                 callback_manager=CallbackManager([callbackHandler]),
+                # max_tokens=max_tokens  # 配置max_tokens
             )
         else:
             llm = init_chat_model(
@@ -67,6 +71,7 @@ def get_llm():
                 api_key=api_key,
                 base_url=base_url,
                 temperature=0,
+                # max_tokens=max_tokens  # 配置max_tokens
             )
     return llm
 

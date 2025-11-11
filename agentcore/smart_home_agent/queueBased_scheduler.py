@@ -456,22 +456,22 @@ def generateTaskToQueueTool(
     action_statement: str,
     condition_func_code: Optional[str]=None,
     condition_func_name: Optional[str]=None,
-    time_ruler: str = "每2秒执行一次"
+    time_ruler: str = "execute once every 2 seconds"
 ) -> str:
-    """将“任务加入队列”，并持续监控，当条件或者时间满足时，会自动执行任务。
-    用于定义带时间规则、条件判断的任务。
+    """Add the 'task to the queue' and continuously monitor; when conditions or time are met, the task will be executed automatically.
+    Used to define tasks with time rules and condition judgments.
 
-    :param task_desc: 用一句话描述本次任务的核心目标（如“定时获取网络状况”）
+    :param task_desc: Describe the core goal of the current task in one sentence (e.g., "regularly obtain network status")
     :type task_desc: str
-    :param action_statement: 自然语言描述的任务执行动作，格式为：当时间规则{time_ruler}满足时，执行本参数描述的操作（如“调用设备数据采集接口”）
+    :param action_statement: Task execution action described in natural language, in the format: when the time rule {time_ruler} is met, execute the operation described by this parameter (e.g., "call the device data collection interface")
     :type action_statement: str
-    :param condition_func_code: 条件判断函数的Python代码字符串（可为空）。非空时需返回布尔值，用于控制{action_statement}是否执行
+    :param condition_func_code: Python code string of the condition judgment function (can be empty). When non-empty, it must return a boolean value to control whether {action_statement} is executed
     :type condition_func_code: Optional[str]
-    :param condition_func_name: 条件函数的名称（可为空）。当{condition_func_code}非空时，需与函数定义中的名称一致
+    :param condition_func_name: Name of the condition function (can be empty). When {condition_func_code} is non-empty, it must be consistent with the name in the function definition
     :type condition_func_name: Optional[str]
-    :param time_ruler: 自然语言描述的时间规则，定义执行或检查条件的时机，默认“每2秒执行一次”
+    :param time_ruler: Time rule described in natural language, defining the timing for executing or checking conditions, default is "execute every 2 seconds"
     :type time_ruler: str
-    :return: 执行任务入队后的结果字符串
+    :return: Result string after the task is enqueued
     :rtype: str
     """
     # 收集所有参数到字典
@@ -486,7 +486,8 @@ def generateTaskToQueueTool(
     active_project_env = global_config.ACTIVE_PROJECT_ENV
     if active_project_env=="dev":
         global_config.GLOBAL_AGENT_DETAILED_LOGGER.info(params_dict)
-        return "成功添加到定时任务队列"
+        # return "成功添加到定时任务队列"
+        return "Successfully added to the scheduled task queue"
     # 过滤掉值为None或空字符串的键
     filtered_params = {
         key: value for key, value in params_dict.items()

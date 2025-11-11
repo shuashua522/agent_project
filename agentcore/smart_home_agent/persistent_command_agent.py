@@ -33,32 +33,31 @@ class GenerateConditionCode(BaseToolAgent):
             """
         uuid_str = str(uuid.uuid4()).replace("-", "_")
         system_prompt = """
-            
-            请根据用户需求生成无参的Python函数，函数名固定为{func_name}，函数形如：
-            def {func_name}()-> bool:
 
-            用户的需求一般是让检查设备的状态是否满足条件：
-            1. 你需要确定是检查哪些设备，这一步可以通过调用@tool get_all_entity_id确定；
-            2. 你需要生成代码来检查相应的设备是否满足条件，如果满足，就返回true。这一步你可以通过@tool get_states_by_entity_id返回的状态进行条件判断;
-            如果你不清楚返回的状态包含什么内容，你可以先调用@tool get_states_by_entity_id观察,每个entity_id最多调用一次。
+                    Please generate a parameterless Python function based on the user's needs. The function name is fixed as {func_name}, and the function is in the form of:
+                    def {func_name}()-> bool:
 
-            - 你不应该在生成代码中调用get_all_entity_id，因为其是为了让你确定设备的entity_id用的；确定完entity_id后，调用get_states_by_entity_id不是就能获得需要的状态信息了
-            - 提供给你的tools，你可以像本地函数一样在代码中调用，例如想在代码中调用@tool calculate_area:
-            print(get_all_entity_id())
+                    The user's needs are generally to check whether the status of the device meets the conditions:
+                    1. You need to determine which devices to check, and this step can be confirmed by calling @tool get_all_entity_id;
+                    2. You need to generate code to check whether the corresponding device meets the conditions; if it does, return true. In this step, you can make conditional judgments based on the status returned by @tool get_states_by_entity_id; if you are unsure of what the returned status contains, you can first call @tool get_states_by_entity_id to check, with a maximum of one call per entity_id.
 
-            生成代码要求：
-            - 必须正确调用上述工具，参数类型要匹配
-            - 代码需要有注释，说明逻辑
-            - 处理可能的异常（如半径为负数的情况）
-            - 必须添加文档注释符说明函数用途
+                    - You should not call get_all_entity_id in the generated code, because it is used for you to determine the entity_id of the device; after determining the entity_id, calling get_states_by_entity_id will allow you to obtain the required status information
+                    - The tools provided to you can be called in the code like local functions. For example, to call @tool calculate_area in the code:
+                    print(get_all_entity_id())
 
-            **生成代码后，调用@tool save_func_code_to_file将其保存到本地函数库中**
-            - 只要调用@tool save_func_code_to_file没有报错，就是保存成功
-            - 不要反复调用@tool save_func_code_to_file，
-            - 保存到函数库里，该结束就结束，不要多次写代码，然后调用@tool save_func_code_to_file，
-            
-            最后！！！！>>>返回格式：仅返回纯Python代码！！！
-            """.format(func_name="func"+uuid_str)
+                    Requirements for generated code:
+                    - Must correctly call the above tools, and the parameter types must match
+                    - The code needs to have comments explaining the logic
+                    - Handle possible exceptions (such as negative radius)
+                    - Must add a docstring to explain the function's purpose
+
+                    **After generating the code, call @tool save_func_code_to_file to save it to the local function library**
+                    - As long as calling @tool save_func_code_to_file does not report an error, the saving is successful
+                    - Do not repeatedly call @tool save_func_code_to_file,
+                    - Once saved to the function library, the process should end; do not write code multiple times and then call @tool save_func_code_to_file,
+
+                    Finally！！！！>>>Return format: Return only pure Python code！！！
+                    """.format(func_name="func" + uuid_str)
         llm = get_llm().bind_tools(self.get_tools())
         system_message = {
             "role": "system",
@@ -69,10 +68,10 @@ class GenerateConditionCode(BaseToolAgent):
         return {"messages": [response]}
 
 @tool
-def generateConditionCodeTool(condition_statement: Annotated[str, "需要检查的条件，自然语言描述;比如卧室的光照是否充足"]):
+def generateConditionCodeTool(condition_statement: Annotated[str, "Condition to be checked, described in natural language; for example, whether the light in the bedroom is sufficient"]):
     """
-    生成一个python函数，用于检查条件{condition_statement}是否已满足
-    :return: python函数字符串
+    Generate a Python function to check whether the condition {condition_statement} is met
+    :return: Python function string
     """
     return GenerateConditionCode().run_agent(condition_statement)
 
@@ -85,8 +84,8 @@ class PersistentCommandAgent(BaseToolAgent):
 
     def call_tools(self, state: MessagesState):
         system_prompt = """
-            调用工具以实现持久化监听用户的指令
-        """
+                    Call tools to achieve persistent monitoring of the user's instructions
+                """
         llm = get_llm().bind_tools(self.get_tools())
         system_message = {
             "role": "system",
@@ -97,15 +96,15 @@ class PersistentCommandAgent(BaseToolAgent):
         return {"messages": [response]}
 
 @tool
-def persistentCommandTool(task: Annotated[str, "需要持久监控的任务描述"])->str:
+def persistentCommandTool(task: Annotated[str, "Description of the task requiring persistent monitoring"])->str:
     """
-        能够根据任务描述，持久化监控。
-        :示例1:
-            task="当网络关闭时，通过我":
-        :示例2:
-            task="每周日，汇报本周智能家居设备使用情况"
-        :示例3:
-            task="每隔一个小时，读取传感器数据，存入数据库"
+        Can perform persistent monitoring based on the task description.
+        :Example 1:
+            task="When the network is disconnected, notify me":
+        :Example 2:
+            task="Every Sunday, report the usage of smart home devices this week":
+        :Example 3:
+            task="Every hour, read sensor data and store it in the database":
     """
     return PersistentCommandAgent().run_agent(task)
 
