@@ -1,0 +1,100 @@
+2025-11-11 17:19:07,594 - INFO - [base_agent:run_agent:93] - ================================ Human Message =================================
+
+When the speaker is off, turn on the desk lamp
+2025-11-11 17:19:18,499 - ERROR - [test_entry:process_testcases:170] - 执行Agent [privacyAgent] 时发生异常：
+异常类型：APIConnectionError
+异常消息：Connection error.
+完整堆栈跟踪：
+Traceback (most recent call last):
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpx\_transports\default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpcore\_sync\connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpcore\_sync\connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpcore\_sync\http_proxy.py", line 316, in handle_request
+    stream = stream.start_tls(**kwargs)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpcore\_sync\http11.py", line 376, in start_tls
+    return self._stream.start_tls(ssl_context, server_hostname, timeout)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpcore\_backends\sync.py", line 154, in start_tls
+    with map_exceptions(exc_map):
+  File "D:\anaconda\envs\langchain_learning\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1017)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\openai\_base_client.py", line 972, in request
+    response = self._client.send(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpx\_client.py", line 914, in send
+    response = self._send_handling_auth(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpx\_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpx\_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpx\_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpx\_transports\default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+  File "D:\anaconda\envs\langchain_learning\lib\contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1017)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "F:\PyCharm\langchain_test\agent_project\agentcore\smart_home_agent\test_with_baselines\test_entry.py", line 163, in process_testcases
+    privacy_home_agent(question)
+  File "F:\PyCharm\langchain_test\agent_project\agentcore\smart_home_agent\smart_home_agent_entry.py", line 68, in privacy_home_agent
+    encode_str = SmartHomeAgent().run_agent(problem)
+  File "F:\PyCharm\langchain_test\agent_project\agentcore\commons\base_agent.py", line 64, in run_agent
+    for step in agent.stream(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langgraph\pregel\__init__.py", line 2533, in stream
+    for _ in runner.tick(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langgraph\pregel\runner.py", line 162, in tick
+    run_with_retry(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langgraph\pregel\retry.py", line 42, in run_with_retry
+    return task.proc.invoke(task.input, config)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langgraph\utils\runnable.py", line 623, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langgraph\utils\runnable.py", line 377, in invoke
+    ret = self.func(*args, **kwargs)
+  File "F:\PyCharm\langchain_test\agent_project\agentcore\smart_home_agent\smart_home_agent_entry.py", line 45, in call_tools
+    response = llm.invoke([system_message] + state["messages"])
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\runnables\base.py", line 5431, in invoke
+    return self.bound.invoke(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\language_models\chat_models.py", line 378, in invoke
+    self.generate_prompt(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\language_models\chat_models.py", line 963, in generate_prompt
+    return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\language_models\chat_models.py", line 782, in generate
+    self._generate_with_cache(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\language_models\chat_models.py", line 1028, in _generate_with_cache
+    result = self._generate(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_openai\chat_models\base.py", line 1071, in _generate
+    response = self.client.create(**payload)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\openai\_utils\_utils.py", line 287, in wrapper
+    return func(*args, **kwargs)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\openai\resources\chat\completions\completions.py", line 925, in create
+    return self._post(
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\openai\_base_client.py", line 1249, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\openai\_base_client.py", line 1004, in request
+    raise APIConnectionError(request=request) from err
+openai.APIConnectionError: Connection error.
+
+2025-11-11 17:19:18,533 - INFO - [test_entry:process_testcases:181] - {'累计输入 token': 4873719, '累计输出 token': 122518, '累计总 token': 4996237}
+2025-11-11 17:19:18,534 - INFO - [test_entry:process_testcases:183] - 
+Agent运行一次的资源统计结果：
+2025-11-11 17:19:18,534 - INFO - [test_entry:process_testcases:184] - 总运行时间：10.94秒
+2025-11-11 17:19:18,534 - INFO - [test_entry:process_testcases:185] - 内存峰值：121.30MB
+2025-11-11 17:19:18,534 - INFO - [test_entry:process_testcases:186] - 内存平均值：120.43MB
+2025-11-11 17:19:18,534 - INFO - [test_entry:process_testcases:187] - CPU使用率峰值：16.60%
+2025-11-11 17:19:18,534 - INFO - [test_entry:process_testcases:188] - CPU使用率平均值：0.45%

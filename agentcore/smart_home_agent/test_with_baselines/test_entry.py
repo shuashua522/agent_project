@@ -125,8 +125,8 @@ def process_testcases(agent_name,dir_path=testing_logs_dir,testNums=1):
     for index, func in enumerate(init_devices.registered_functions):
         # if(index+1<=36):
         #     continue
-        if(index+1<=23):
-            continue
+        # if(index+1<=23):
+        #     continue
         question=func()
 
         # 处理文件名：移除特殊字符，确保文件名合法 ; 保留中文、字母、数字和下划线，其他字符替换为下划线
@@ -195,5 +195,5 @@ if __name__=="__main__":
     # main("singleAgent",1)
     # main("sashaAgent",1)
     # main("sageAgent",1)
-    main("privacyAgent",3)
+    main("privacyAgent",4)
     pass
