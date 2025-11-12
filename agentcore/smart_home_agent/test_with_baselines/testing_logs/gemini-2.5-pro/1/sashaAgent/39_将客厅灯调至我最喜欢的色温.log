@@ -1,0 +1,55 @@
+2025-11-10 11:00:19,827 - INFO - [sashaAgent:run_sashaAgent:264] - =========clarification 阶段==========
+2025-11-10 11:00:19,835 - INFO - [base_agent:run_agent:93] - ================================ Human Message =================================
+
+将客厅灯调至我最喜欢的色温。
+2025-11-10 11:00:25,427 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+
+我不知道你最喜欢的色温是什么。
+2025-11-10 11:00:25,431 - ERROR - [test_entry:process_testcases:168] - 执行Agent [sashaAgent] 时发生异常：
+异常类型：OutputParserException
+异常消息：Invalid json output: 我不知道你最喜欢的色温是什么。
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+完整堆栈跟踪：
+Traceback (most recent call last):
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\output_parsers\json.py", line 82, in parse_result
+    return parse_json_markdown(text)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\utils\json.py", line 150, in parse_json_markdown
+    return _parse_json(json_str, parser=parser)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\utils\json.py", line 166, in _parse_json
+    return parser(json_str)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\utils\json.py", line 123, in parse_partial_json
+    return json.loads(s, strict=strict)
+  File "D:\anaconda\envs\langchain_learning\lib\json\__init__.py", line 359, in loads
+    return cls(**kw).decode(s)
+  File "D:\anaconda\envs\langchain_learning\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "D:\anaconda\envs\langchain_learning\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "F:\PyCharm\baseling_sasha\agent_project\agentcore\smart_home_agent\test_with_baselines\test_entry.py", line 152, in process_testcases
+    run_sashaAgent(question)
+  File "F:\PyCharm\baseling_sasha\agent_project\agentcore\smart_home_agent\test_with_baselines\baselines_homeassitant\sashaAgent.py", line 266, in run_sashaAgent
+    clarification_answer=PydanticOutputParser(pydantic_object=ClarificationResponse).parse(clarification_answer)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\output_parsers\pydantic.py", line 77, in parse
+    return super().parse(text)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\output_parsers\json.py", line 96, in parse
+    return self.parse_result([Generation(text=text)])
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\output_parsers\pydantic.py", line 61, in parse_result
+    json_object = super().parse_result(result)
+  File "D:\anaconda\envs\langchain_learning\lib\site-packages\langchain_core\output_parsers\json.py", line 85, in parse_result
+    raise OutputParserException(msg, llm_output=text) from e
+langchain_core.exceptions.OutputParserException: Invalid json output: 我不知道你最喜欢的色温是什么。
+For troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/OUTPUT_PARSING_FAILURE 
+
+2025-11-10 11:00:25,468 - INFO - [test_entry:process_testcases:179] - {'累计输入 token': 401044, '累计输出 token': 57207, '累计总 token': 458251}
+2025-11-10 11:00:25,468 - INFO - [test_entry:process_testcases:181] - 
+Agent运行一次的资源统计结果：
+2025-11-10 11:00:25,468 - INFO - [test_entry:process_testcases:182] - 总运行时间：5.64秒
+2025-11-10 11:00:25,468 - INFO - [test_entry:process_testcases:183] - 内存峰值：110.86MB
+2025-11-10 11:00:25,469 - INFO - [test_entry:process_testcases:184] - 内存平均值：110.04MB
+2025-11-10 11:00:25,469 - INFO - [test_entry:process_testcases:185] - CPU使用率峰值：0.00%
+2025-11-10 11:00:25,469 - INFO - [test_entry:process_testcases:186] - CPU使用率平均值：0.00%

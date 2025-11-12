@@ -1,0 +1,52 @@
+2025-11-10 11:09:56,036 - INFO - [base_agent:run_agent:93] - ================================ Human Message =================================
+
+当台灯打开时，打开插座
+2025-11-10 11:10:06,811 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  ConditionCheckerTool (call_CbcqHDTNs1Ak1N1j5IiYyIMi)
+ Call ID: call_CbcqHDTNs1Ak1N1j5IiYyIMi
+  Args:
+    text: Is the desk lamp on?
+2025-11-10 11:10:06,820 - INFO - [base_agent:run_agent:93] - ================================ Human Message =================================
+
+
+    Condition to check: Is the desk lamp on?
+    Thought: I should generate a plan to help with checking this condition.
+    
+2025-11-10 11:10:14,992 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+
+I need to check if the desk lamp is on. First, I will get all the entities to find the entity_id of the desk lamp. Then, I will get the state of the desk lamp using its entity_id and check if it is on. Finally, I will write a Python function to check the condition.
+Action: SmartThingsPlannerTool
+Action Input:
+Is the desk lamp on?
+2025-11-10 11:10:14,994 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: ConditionCheckerTool
+
+I need to check if the desk lamp is on. First, I will get all the entities to find the entity_id of the desk lamp. Then, I will get the state of the desk lamp using its entity_id and check if it is on. Finally, I will write a Python function to check the condition.
+Action: SmartThingsPlannerTool
+Action Input:
+Is the desk lamp on?
+2025-11-10 11:10:25,120 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  NotifyOnConditionTool (call_h3KHT2r1Ebwbo673ctQjOSeT)
+ Call ID: call_h3KHT2r1Ebwbo673ctQjOSeT
+  Args:
+    action_description: turn on the socket
+    condition_description: the desk lamp is on
+    function_name: check_desk_lamp_on
+    notify_when: True
+2025-11-10 11:10:25,122 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: NotifyOnConditionTool
+
+You will be notified when the condition occurs.
+2025-11-10 11:10:35,429 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+
+好的，当台灯打开时，插座就会打开。
+2025-11-10 11:10:35,515 - INFO - [test_entry:process_testcases:179] - {'累计输入 token': 40736, '累计输出 token': 16445, '累计总 token': 57181}
+2025-11-10 11:10:35,515 - INFO - [test_entry:process_testcases:181] - 
+Agent运行一次的资源统计结果：
+2025-11-10 11:10:35,515 - INFO - [test_entry:process_testcases:182] - 总运行时间：39.48秒
+2025-11-10 11:10:35,515 - INFO - [test_entry:process_testcases:183] - 内存峰值：110.66MB
+2025-11-10 11:10:35,515 - INFO - [test_entry:process_testcases:184] - 内存平均值：109.73MB
+2025-11-10 11:10:35,515 - INFO - [test_entry:process_testcases:185] - CPU使用率峰值：42.60%
+2025-11-10 11:10:35,515 - INFO - [test_entry:process_testcases:186] - CPU使用率平均值：0.28%

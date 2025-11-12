@@ -1,0 +1,62 @@
+2025-11-10 11:10:35,521 - INFO - [base_agent:run_agent:93] - ================================ Human Message =================================
+
+如果5分钟没有检测到人，就关闭所有灯。
+2025-11-10 11:10:44,640 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  ConditionCheckerTool (call_xvrRQ5taUfBleo9ZjFLPod3L)
+ Call ID: call_xvrRQ5taUfBleo9ZjFLPod3L
+  Args:
+    text: 5分钟没有检测到人
+2025-11-10 11:10:44,647 - INFO - [base_agent:run_agent:93] - ================================ Human Message =================================
+
+
+    Condition to check: 5分钟没有检测到人
+    Thought: I should generate a plan to help with checking this condition.
+    
+2025-11-10 11:10:56,055 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+
+I need to find a motion sensor and check if it has not detected motion for 5 minutes. First, I will get all the entities and find the motion sensor. Then, I will get the state of the motion sensor and check the `last_changed` attribute. Finally, I will write a Python function to check if the time difference is greater than 5 minutes.
+Action: SmartThingsPlannerTool
+Action Input:
+
+```json
+{
+  "task": "write a python function to check if a motion sensor has not detected motion for 5 minutes"
+}
+```
+2025-11-10 11:10:56,056 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: ConditionCheckerTool
+
+I need to find a motion sensor and check if it has not detected motion for 5 minutes. First, I will get all the entities and find the motion sensor. Then, I will get the state of the motion sensor and check the `last_changed` attribute. Finally, I will write a Python function to check if the time difference is greater than 5 minutes.
+Action: SmartThingsPlannerTool
+Action Input:
+
+```json
+{
+  "task": "write a python function to check if a motion sensor has not detected motion for 5 minutes"
+}
+```
+2025-11-10 11:11:04,771 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+Tool Calls:
+  NotifyOnConditionTool (call_QIAOfx9ufa5z2evVitAX9dkw)
+ Call ID: call_QIAOfx9ufa5z2evVitAX9dkw
+  Args:
+    action_description: 关闭所有灯
+    condition_description: 5分钟没有检测到人
+    function_name: check_motion_sensor
+    notify_when: True
+2025-11-10 11:11:04,773 - INFO - [base_agent:run_agent:93] - ================================= Tool Message =================================
+Name: NotifyOnConditionTool
+
+You will be notified when the condition occurs.
+2025-11-10 11:11:11,870 - INFO - [base_agent:run_agent:93] - ================================== Ai Message ==================================
+
+好的，如果5分钟内没有检测到人，我将关闭所有灯。
+2025-11-10 11:11:11,924 - INFO - [test_entry:process_testcases:179] - {'累计输入 token': 44043, '累计输出 token': 18951, '累计总 token': 62994}
+2025-11-10 11:11:11,924 - INFO - [test_entry:process_testcases:181] - 
+Agent运行一次的资源统计结果：
+2025-11-10 11:11:11,924 - INFO - [test_entry:process_testcases:182] - 总运行时间：36.41秒
+2025-11-10 11:11:11,924 - INFO - [test_entry:process_testcases:183] - 内存峰值：110.74MB
+2025-11-10 11:11:11,924 - INFO - [test_entry:process_testcases:184] - 内存平均值：109.84MB
+2025-11-10 11:11:11,925 - INFO - [test_entry:process_testcases:185] - CPU使用率峰值：57.30%
+2025-11-10 11:11:11,925 - INFO - [test_entry:process_testcases:186] - CPU使用率平均值：0.47%
