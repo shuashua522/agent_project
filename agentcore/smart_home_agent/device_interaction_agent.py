@@ -19,6 +19,7 @@ from agent_project.agentcore.smart_home_agent.fake_request.fake_do_service impor
     fake_execute_domain_service_by_entity_id, bad_request
 from agent_project.agentcore.smart_home_agent.fake_request.fake_get_entity import fake_get_all_entities, \
     fake_get_services_by_domain, fake_get_states_by_entity_id
+from agent_project.agentcore.smart_home_agent.new_privacy_handler import get_privacy_llm
 from agent_project.agentcore.smart_home_agent.privacy_handler import RequestBodyDecodeAgent, replace_encoded_text, \
     jsonBodyDecodeAndCalc
 
@@ -114,7 +115,8 @@ def get_all_entity_id()-> Union[Dict, List]:
             # 解析JSON文件并返回Python对象
             result=json.load(f)
 
-    return privacyHandler.encodeEntities(result)
+    # return privacyHandler.encodeEntities(result)
+    return result
 @tool
 def get_services_by_domain(domain) -> Union[Dict, List]:
     """
@@ -151,7 +153,7 @@ def get_states_by_entity_id(entity_id: Annotated[str, "check the status of {enti
     Returns 404 if not found.
     """
     # entity_id=privacyHandler.decodeEntityId(entity_id)
-    entity_id=replace_encoded_text(entity_id)
+    # entity_id=replace_encoded_text(entity_id)
 
     result=None
     if active_project_env == "pro":
@@ -174,7 +176,8 @@ def get_states_by_entity_id(entity_id: Annotated[str, "check the status of {enti
         file_path = os.path.join(mock_data_dir, 'selected_entities.json')
         result=extract_entity_by_id(file_path,entity_id)
 
-    return privacyHandler.encodeEntity(result)
+    # return privacyHandler.encodeEntity(result)
+    return result
 
 @tool
 def execute_domain_service_by_entity_id(
@@ -228,7 +231,7 @@ def execute_domain_service_by_entity_id(
         result=fake_execute_domain_service_by_entity_id(domain,service,body)
     if result==bad_request:
         return result
-    # return result
+    return result
 
 def tools_test():
     # 正确调用无参数工具
@@ -256,7 +259,8 @@ class DeviceInteractionAgent(BaseToolAgent):
         return tools
 
     def call_tools(self, state: MessagesState):
-        llm = get_llm().bind_tools(self.get_tools())
+        # llm = get_llm().bind_tools(self.get_tools())
+        llm = get_privacy_llm().bind_tools(self.get_tools())
         # prompt = f"""
         #             根据用户的指定，调用提供的工具来获取设备状态或者操作设备
         #             - 因为部分数据涉及隐私，所以你获取的数据可能已被加密，加密后的格式形如@xxx@，具体例子：@nB/MRO8IqOyD9Kj8t9A3kw==:5sWFd4t1UNtxvhX2LYYaqOZ6aVIKfXw7LiBwXmE/d38n30HHZColHIGWTZPpQlo6@
@@ -295,7 +299,7 @@ def deviceInteractionTool(task: Annotated[str, "Natural language description for
 # func("当前光照充足时，切换插座状态")
 
 if __name__ == "__main__":
-    # DeviceInteractionAgent().run_agent("网关现在的网络状况如何？")
+    DeviceInteractionAgent().run_agent("网关现在的网络状况如何？")
 
 
     # print(mock_data_dir)

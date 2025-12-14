@@ -7,6 +7,7 @@ from agent_project.agentcore.commons.base_agent import BaseToolAgent
 from agent_project.agentcore.commons.utils import get_llm, get_local_llm
 from agent_project.agentcore.smart_home_agent.device_interaction_agent import deviceInteractionTool
 from agent_project.agentcore.smart_home_agent.memory_preference_agent import memory_tool
+from agent_project.agentcore.smart_home_agent.new_privacy_handler import get_privacy_llm
 from agent_project.agentcore.smart_home_agent.persistent_command_agent import persistentCommandTool
 from agent_project.agentcore.smart_home_agent.privacy_handler import ResultDecodeAgent, replace_encoded_text
 
@@ -37,7 +38,8 @@ class SmartHomeAgent(BaseToolAgent):
                     - Before knowing which devices are available, it is forbidden to make arbitrary plans or fabricate non-existent things.
                     - When calling persistent tools, you only need to clearly state what to do when a certain device is in a certain state. No need to provide any encrypted data
                 """
-        llm = get_llm().bind_tools(self.get_tools())
+        # llm = get_llm().bind_tools(self.get_tools())
+        llm = get_privacy_llm().bind_tools(self.get_tools())
         system_message = {
             "role": "system",
             "content": system_prompt,
@@ -81,8 +83,8 @@ def privacy_home_agent(problem:str):
         logger.info("整理文本结果:\n"+response.content)
     return response.content
 if __name__ == "__main__":
-    encode_str = SmartHomeAgent().run_agent("有几个设备")
-    decode_str=replace_encoded_text(encode_str)
-    print(decode_str)
+    # encode_str = SmartHomeAgent().run_agent("有几个设备")
+    # decode_str=replace_encoded_text(encode_str)
+    SmartHomeAgent().run_agent("台灯状况如何")
     # SmartHomeAgent().run_agent("每隔一天，检查光照是否充足")
     pass
