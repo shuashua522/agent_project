@@ -236,50 +236,106 @@ class PrivacyHandler:
 
         # 重构后的提示词（更清晰、指令更明确）
         system_prompt = f"""
-        你是智能家居场景下的隐私信息处理助手，核心任务是精准识别文本中的隐私信息，并生成替换映射表。
-        【核心规则】
-        1. 隐私信息识别范参考（不局限于以下类型）：
-           - {chr(10).join([f"- {t}" for t in self.privacy_types])}
-        2. 非隐私信息识别范参考（不局限于以下类型）：
-            -{chr(10).join([f"- {t}" for t in self.not_privacy_types])}
-        3. 语义变量命名规范：
-           - 优先使用语义化命名（如IP地址→ip_address、WiFi名称→wifi_ssid）；
-           - 同类型重复项加序号（如多个ID→unique_id_01、unique_id_02，多个时间戳→timestamp_01）；
-           - 变量名仅包含字母、数字、下划线，不使用特殊字符。
-        4. 输出要求：
-           - 仅返回JSON格式内容，无任何多余文本（如解释、说明、备注）；
-           - JSON必须包含且仅包含"encoded_text"字段，值为键值对字典（key=原始隐私文本，value=语义变量）；
-           - 确保JSON语法合法（无多余逗号、引号闭合），可直接被JSON解析器解析；
-           - 非隐私信息（如"2.4G 无线"、"测试外网连通性"等普通文本）绝不替换。
+                你是智能家居场景下的隐私信息处理助手，核心任务是精准识别文本中的隐私信息，并生成指定格式的映射表。
+                【核心规则】
+                1. 隐私信息识别范围参考（不局限于以下类型）：
+                   - {chr(10).join([f"- {t}" for t in self.privacy_types])}
+                2. 非隐私信息识别范围参考（不局限于以下类型）：
+                   - {chr(10).join([f"- {t}" for t in self.not_privacy_types])}
+                3. 语义变量命名规范：
+                   - 优先使用纯语义化命名（如IP地址→ip_address、WiFi名称→wifi_ssid、设备ID→unique_id、实体ID→entity_id）；
+                   - 同类型重复项无需添加序号，统一使用基础语义名（如多个IP地址均使用ip_address，多个ID均使用unique_id）；
+                   - 变量名仅包含字母、数字、下划线，不使用特殊字符，且全程不添加任何序号后缀；
+                4. 输出要求：
+                   - 仅返回JSON格式内容，无任何多余文本（如解释、说明、备注）；
+                   - JSON必须包含且仅包含"encoded_text"字段，该字段的值为字典：
+                     - 字典的key是语义变量名（如entity_id、ip_address、unique_id）；
+                     - 字典的value是对应隐私信息组成的列表（即使只有一个隐私信息，也必须用列表包裹）；
+                   - 确保JSON语法合法（无多余逗号、引号闭合），可直接被JSON解析器解析；
+                   - 非隐私信息（如"2.4G 无线"、"测试外网连通性"等普通文本）绝不纳入映射表；
+                   - 严格按照指定结构输出，禁止颠倒key和value的对应关系；
+                   - 【核心禁止项】禁止出现同一隐私数据被映射到多个不同key的情况（例如禁止同时出现"ip_address":["103.128.43.141"]和"state":["103.128.43.141"]）；所有隐私数据仅归属到其对应的唯一语义变量名之下。
 
-        【正确示例】
-        示例1（结构化JSON文本）：
-        原始文本：
-        {{
-            "entity_id": "sensor.lumi_cn_551385025_mcn001_ip_address_p_2_2",
-            "state": "192.168.43.141",
-            "context": {{ "id": "01K96T2RKH7KPTX9RS21Z9973A" }}
-        }}
-        输出JSON：
-        {{
-            "encoded_text": {{
-                "sensor.lumi_cn_551385025_mcn001_ip_address_p_2_2": "entity_id_01",
-                "192.168.43.141": "ip_address",
-                "01K96T2RKH7KPTX9RS21Z9973A": "unique_id_01"
-            }}
-        }}
+                【正确示例】
+                【示例1（结构化JSON文本）】：
+                原始文本：
+                {{
+                    "entity_id": "sensor.lumi_cn_551385025_mcn001_ip_address_p_2_2",
+                    "state": "192.168.43.141",
+                    "context": {{ "id": "01K96T2RKH7KPTX9RS21Z9973A" }}
+                }}
+                输出JSON：
+                {{
+                    "encoded_text": {{
+                        "entity_id":["sensor.lumi_cn_551385025_mcn001_ip_address_p_2_2"],
+                        "ip_address":["192.168.43.141"],
+                        "unique_id":["01K96T2RKH7KPTX9RS21Z9973A"]
+                    }}
+                }}
+                示例1解释：
+                1. "entity_id"作为key：原始文本中"entity_id"字段的值是实体ID类隐私信息，按命名规范映射为语义变量名"entity_id"，且该值仅有1个，故用列表包裹后作为value；
+                2. "ip_address"作为key：原始文本中"state"字段的值"192.168.43.141"属于IP地址类隐私信息，按命名规范映射为语义变量名"ip_address"（而非使用原始字段名"state"作为key），单个值仍用列表包裹；
+                3. "unique_id"作为key：原始文本中"context"下的"id"字段值"01K96T2RKH7KPTX9RS21Z9973A"属于设备/唯一ID类隐私信息，按命名规范映射为语义变量名"unique_id"（而非使用原始字段名"id"作为key）；
+                4. 唯一性合规：IP地址"192.168.43.141"仅映射到"ip_address"一个key，未出现同时映射到"state"等其他key的情况；
+                5. 非隐私信息处理：原始文本中的字段名（如"state"、"context"）为结构化标识，不属于隐私信息，故未纳入映射表；
+                6. 格式合规性：输出仅包含"encoded_text"字段，key为纯语义化命名，value均为列表格式，JSON语法无错误。
 
-        示例2（自然语言文本）：
-        原始文本：
-        当前网关IP：192.168.43.141，Wi-Fi SSID：shuashua，设备ID：01K96T2RKHMNWPKNM7WTG4RYQ9。
-        输出JSON：
-        {{
-            "encoded_text": {{
-                "192.168.43.141": "ip_address",
-                "shuashua": "wifi_ssid",
-                "01K96T2RKHMNWPKNM7WTG4RYQ9": "unique_id_01"
-            }}
-        }}
+                【示例2（自然语言文本）】：
+                原始文本：
+                当前网关IP：192.168.43.141，备用IP：192.168.43.142，Wi-Fi SSID：shuashua，设备ID：01K96T2RKHMNWPKNM7WTG4RYQ9、02B87U3SLP8LQSY8TU32A8864B。
+                输出JSON：
+                {{
+                    "encoded_text": {{
+                        "ip_address":["192.168.43.141","192.168.43.142"],
+                        "wifi_ssid":["shuashua"],
+                        "unique_id":["01K96T2RKHMNWPKNM7WTG4RYQ9","02B87U3SLP8LQSY8TU32A8864B"]
+                    }}
+                }}
+                示例2解释：
+                1. "ip_address"作为key：原始文本中"当前网关IP"和"备用IP"对应的值均为IP地址类隐私信息，按规范统一使用"ip_address"作为key（未为不同IP创建多个key），多个值合并为一个列表作为value；
+                2. "wifi_ssid"作为key：原始文本中"Wi-Fi SSID"对应的值"shuashua"属于WiFi名称类隐私信息，按命名规范映射为"wifi_ssid"，单个值用列表包裹；
+                3. "unique_id"作为key：原始文本中"设备ID"后的两个值均为设备ID类隐私信息，按规范统一使用"unique_id"作为key，多个值合并为一个列表；
+                4. 唯一性合规：所有IP地址仅归属到"ip_address"，所有设备ID仅归属到"unique_id"，无同一隐私数据映射到多个key的情况；
+                5. 非隐私信息处理："当前网关IP："、"备用IP："等自然语言描述性文本不属于隐私信息，故未纳入映射表；
+                6. 命名合规性：所有key均为纯语义化命名（无序号、无特殊字符），符合"仅包含字母、数字、下划线"的规范；
+                7. 格式合规性：输出仅包含"encoded_text"字段，key和value对应关系正确，JSON语法合法且无多余文本。
+
+                【示例3（结构化JSON文本）】：
+                原始文本：
+                {{
+                    "entity_id": "text.lumi_cn_551385025_mcn997_effective_time_p_6_2",
+                    "state": "2:00-06:00",
+                    "attributes": {{
+                      "mode": "text",
+                      "min": 0,
+                      "max": 255,
+                      "pattern": null,
+                      "friendly_name": "小米智能多模网关2 * 指示灯与勿扰模式配置 生效时间段(格式:21:00-09:00)"
+                    }},
+                    "last_changed": "2025-11-05T09:50:16.490022+00:00",
+                    "last_reported": "2025-11-05T09:50:16.490022+00:00",
+                    "last_updated": "2025-11-05T09:50:16.490022+00:00",
+                    "context": {{
+                      "id": "01K96T2RKJNDHEFJGMTJJGRAAD",
+                      "parent_id": null,
+                      "user_id": null
+                    }}
+                }}
+                输出JSON：
+                {{
+                    "encoded_text": {{
+                        "entity_id":["text.lumi_cn_551385025_mcn997_effective_time_p_6_2"],
+                        "time":["2:00-06:00","2025-11-05T09:50:16.490022+00:00"],
+                        "unique_id":["01K96T2RKJNDHEFJGMTJJGRAAD"]
+                    }}
+                }}
+                示例3解释：
+                1. "entity_id"作为key：原始文本中"entity_id"字段的值是实体ID类隐私信息，按命名规范映射为语义变量名"entity_id"，且该值仅有1个，故用列表包裹后作为value；
+                2. "time"作为key：原始文本中"state"字段的值"2:00-06:00"、"last_changed"、"last_reported"、"last_updated"字段的值"2025-11-05T09:50:16.490022+00:00"都属于时间类隐私信息，按命名规范统一使用"time"作为语义变量名（而非使用原始字段名"state"、"last_changed"等作为key），多个时间值合并为一个列表作为value；
+                3. "unique_id"作为key：原始文本中"context"下的"id"字段值"01K96T2RKJNDHEFJGMTJJGRAAD"属于设备/唯一ID类隐私信息，按命名规范映射为语义变量名"unique_id"（而非使用原始字段名"id"作为key）；
+                4. 唯一性合规：时间类隐私数据仅映射到"time"一个key，实体ID仅映射到"entity_id"一个key，唯一ID仅映射到"unique_id"一个key，无同一隐私数据被映射到多个不同key的情况；
+                5. 非隐私信息处理：原始文本中的"attributes"下的"mode"、"min"、"max"、"pattern"、"friendly_name"为设备配置的描述性非隐私文本，"context"中的"parent_id"、"user_id"为空值或非隐私标识，所有结构化字段名（如"state"、"attributes"）不属于隐私信息，均未纳入映射表；
+                6. 格式合规性：输出仅包含"encoded_text"字段，key为纯语义化命名，value均为列表格式，JSON语法无错误。
         """
 
         # 构造消息列表（符合LLM对话格式）
@@ -290,25 +346,59 @@ class PrivacyHandler:
 
         response = llm.invoke(messages).content
         # 提取纯JSON内容（处理LLM可能返回的多余文本）
+        # todo 提示词已经修改，需要根据修改后的提示词，修改代码
         json_start = response.find("{")
         json_end = response.rfind("}") + 1
         if json_start == -1 or json_end == 0:
             raise ValueError(f"LLM返回内容无有效JSON：{response}")
 
         json_str = response[json_start:json_end]
-        # 解析JSON
-        result = json.loads(json_str)
+        json_str = response[json_start:json_end]
+        try:
+            # 解析JSON
+            result = json.loads(json_str)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"JSON解析失败：{e}，原始内容：{json_str}") from e
 
         # 验证返回结构
         if "encoded_text" not in result or not isinstance(result["encoded_text"], dict):
             raise ValueError(f"返回JSON缺少'encoded_text'字段或类型错误：{result}")
 
-        encode_text = result["encoded_text"]
-        # 清理空值或无效映射（可选）
-        encode_text = {k: v for k, v in encode_text.items() if k.strip() and v.strip()}
-        encode_text = {k: f"@{v}@" for k, v in encode_text.items()}
+        llm_encoded_text = result["encoded_text"]
 
-        # 保存到实例变量
+        encode_text: Dict[str, str] = {}
+        # 遍历LLM返回的语义变量→隐私列表，转换为 隐私值→语义变量_序号 的映射
+        for semantic_key, privacy_values in llm_encoded_text.items():
+            # 验证value是列表类型
+            if not isinstance(privacy_values, list):
+                raise ValueError(f"语义变量{semantic_key}对应的值不是列表：{privacy_values}")
+
+            # 遍历隐私值列表，为重复项添加序号（序号从1开始，格式如 _01、_02）
+            for idx, privacy_val in enumerate(privacy_values, start=1):
+                # 跳过空值或无效值
+                if not isinstance(privacy_val, str) or not privacy_val.strip():
+                    continue
+                # # 生成带序号的语义变量（仅当同类型有多个值时添加序号，单个值则不加）
+                # if len(privacy_values) == 1:
+                #     final_semantic_key = semantic_key  # 单个值无需加序号
+                # else:
+                #     final_semantic_key = f"{semantic_key}_{idx:02d}"  # 补零格式，如ip_address_01
+                final_semantic_key = f"{semantic_key}_{idx:02d}"
+
+                # 避免重复隐私值覆盖（理论上隐私值唯一，此处做防护）
+                if privacy_val in encode_text:
+                    raise ValueError(f"检测到重复隐私值：{privacy_val}，语义变量冲突")
+
+                # 构建最终映射（隐私值→带序号的语义变量）
+                encode_text[privacy_val] = final_semantic_key
+
+        # 验证映射表有效性
+        if not encode_text:
+            # 无隐私信息时返回空字典（而非报错，更符合业务逻辑）
+            self.encode_map = {}
+            self.get_decode_map()
+            return {}
+
         self.encode_map = encode_text
         # 同时生成解密映射表
         self.get_decode_map()
@@ -351,31 +441,54 @@ class PrivacyHandler:
 
 if __name__ == "__main__":
     # DemoToolAgent().run_agent("光照强度？")
-    text=None
-    with open(r"F:\PyCharm\langchain_test\agent_project\temp_try\homeassitant_data\data\entities.json", 'r',
-              encoding='utf-8') as f:
-        text = json.dumps(json.load(f), ensure_ascii=False)
-    print(text)
-    print("========")
-    print(PrivacyHandler().encode(text))
-#     handler=PrivacyHandler()
-#     test_text ="""当前光照强度如下：
-#
-# - 小米人体传感器2S（sensor.xiaomi_cn_blt_3_1ftnm7360c800_pir1_illumination_p_2_1005）：0.0 lx（最近上报时间 2025-11-04T07:54:10.536831+00:00）
-# - 二楼卧室门窗传感器（sensor.isa_cn_blt_3_1md0u6qht0k00_dw2hl_illumination_p_2_1）：状态 “弱”"""
-#     print("原始文本：", test_text)
-#     # 1. 生成加密映射表
-#     encode_map = handler.get_encode_map(test_text)
-#     print("加密映射表：", encode_map)
-#
-#     # 2. 加密文本
-#     encrypted_text = handler.replace_text(test_text, encode_map)
-#     print("加密后文本：", encrypted_text)
-#
-#     # 3. 生成解密映射表
-#     decode_map = handler.get_decode_map()
-#     print("解密映射表：", decode_map)
-#
-#     # 4. 解密文本
-#     decrypted_text = handler.replace_text(encrypted_text, decode_map)
-#     print("解密后文本：", decrypted_text)
+
+    # text=None
+    # with open(r"F:\PyCharm\langchain_test\agent_project\temp_try\homeassitant_data\data\entities.json", 'r',
+    #           encoding='utf-8') as f:
+    #     text = json.dumps(json.load(f), ensure_ascii=False)
+    # print(text)
+    # print("========")
+    # print(PrivacyHandler().encode(text))
+
+    print(get_llm().invoke("你好").content)
+    handler=PrivacyHandler()
+    # test_text ="""{
+    #         "entity_id": "sensor.lumi_cn_555475025_mcn001_ip_address_p_2_2",
+    #         "state": "103.128.43.141",
+    #         "context": { "id": "01K58p58KH7KPTX9RS21Z9973A" }
+    #     }"""
+    test_text ="""  {
+    "entity_id": "text.lumi_cn_551385025_mcn001_effective_time_p_6_2",
+    "state": "21:00-09:00",
+    "attributes": {
+      "mode": "text",
+      "min": 0,
+      "max": 255,
+      "pattern": null,
+      "friendly_name": "小米智能多模网关2 * 指示灯与勿扰模式配置 生效时间段(格式:21:00-09:00)"
+    },
+    "last_changed": "2025-11-04T06:50:13.490022+00:00",
+    "last_reported": "2025-11-04T06:50:13.490022+00:00",
+    "last_updated": "2025-11-04T06:50:13.490022+00:00",
+    "context": {
+      "id": "01K96T2RKJNDHEFJGMTJJGRS57",
+      "parent_id": null,
+      "user_id": null
+    }
+  }"""
+    print("原始文本：", test_text)
+    # 1. 生成加密映射表
+    encode_map = handler.get_encode_map(test_text)
+    print("加密映射表：", encode_map)
+
+    # 2. 加密文本
+    encrypted_text = handler.replace_text(test_text, encode_map)
+    print("加密后文本：", encrypted_text)
+
+    # 3. 生成解密映射表
+    decode_map = handler.get_decode_map()
+    print("解密映射表：", decode_map)
+
+    # 4. 解密文本
+    decrypted_text = handler.replace_text(encrypted_text, decode_map)
+    print("解密后文本：", decrypted_text)
